@@ -213,10 +213,131 @@ tr.drag-source{opacity:.4}
 }
 /* ── 반응형 ── */
 @media(max-width:768px){
-  .sidebar{width:52px}
-  .logo-title,.logo-sub,.nav-item span:not(.icon),.nav-badge,.year-bar select,.sidebar-footer span{display:none}
-  .nav-item{justify-content:center;padding:8px 0}
+  /* 전체 레이아웃: 사이드바를 하단 탭바로 전환 */
+  .shell{flex-direction:column}
+  .sidebar{
+    width:100%!important;
+    height:auto;
+    border-right:none;
+    border-top:1px solid var(--border);
+    order:2;
+    flex-direction:row;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding:0;
+    flex-shrink:0;
+  }
+  .main{order:1;overflow-y:auto;height:calc(100dvh - 58px)}
+
+  /* 로고/연도바 숨김 */
+  .logo,.year-bar,.sidebar-footer{display:none!important}
+
+  /* 시스템 탭 (차체/휠) — 사이드바 상단에 고정 */
+  #sys-tabs-wrap{display:none!important}
+
+  /* 네비게이션: 가로 탭바 */
+  .nav-sec{display:contents}
+  .nav-lbl{display:none!important}
+  .nav-item{
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:6px 0;
+    min-width:52px;
+    flex:1;
+    gap:2px;
+    border-radius:0;
+    border-bottom:none;
+    border-top:2px solid transparent;
+    font-size:9px;
+  }
+  .nav-item.active{border-top:2px solid var(--b)!important;background:var(--bbg)}
+  .nav-item .icon{font-size:18px;line-height:1}
+  .nav-item span:not(.icon){font-size:9px;color:var(--tx3);display:block!important}
+  .nav-badge{display:inline-block!important;font-size:9px;padding:0 4px;min-width:14px;height:14px;line-height:14px;position:absolute;top:4px;right:4px}
+  .nav-item{position:relative}
+
+  /* 시스템 전환 버튼: 탭바 맨 앞 표시 */
+  .sys-tab-row{
+    display:flex!important;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:4px 6px;
+    border-right:1px solid var(--border);
+    gap:3px;
+    min-width:52px;
+    flex-shrink:0;
+    background:var(--bg2);
+  }
+  #sys-tab-body,#sys-tab-wheel{
+    padding:2px 4px!important;
+    font-size:8px!important;
+    width:38px;
+  }
+
+  /* 페이지 패딩 줄이기 */
+  .page{padding:12px}
+
+  /* 탑바 */
+  .topbar{padding:8px 12px;gap:6px;flex-wrap:wrap}
+  .topbar-title{font-size:14px}
+  .year-chip{font-size:11px;padding:2px 8px}
+
+  /* 카드/그리드 */
   .grid2,.grid3{grid-template-columns:1fr}
+  .card{padding:12px}
+
+  /* 대시보드 */
+  .db-grid{grid-template-columns:1fr!important}
+  .db-card{padding:12px!important}
+  .db-card[style*="grid-column:span 2"]{grid-column:span 1!important}
+  .db-card[style*="grid-column: span 2"]{grid-column:span 1!important}
+
+  /* 의뢰 관리: 좌우 그리드 → 상하 단열 */
+  #orders-layout{grid-template-columns:1fr!important;gap:8px!important}
+  #order-list-panel{max-height:260px;overflow-y:auto;border-right:none!important}
+  #order-detail{padding:0!important}
+
+  /* 시험결과 좌우 분할 → 상하 */
+  #rs-layout{grid-template-columns:1fr!important;height:auto!important;overflow:visible!important}
+  #rs-list{max-height:180px;overflow-y:auto;border-right:none!important;border-bottom:1px solid var(--border)}
+
+  /* 모달 */
+  .modal{
+    width:calc(100vw - 16px)!important;
+    max-width:calc(100vw - 16px)!important;
+    max-height:90dvh;
+    overflow-y:auto;
+    border-radius:12px 12px 0 0;
+    margin:0!important;
+  }
+  .overlay{align-items:flex-end!important;padding:0!important}
+
+  /* 테이블 가로 스크롤 */
+  .tk-table{font-size:11px}
+  #tk-body{overflow-x:auto}
+
+  /* 버튼/입력 */
+  .btn{padding:7px 12px;font-size:12px}
+  input,select{font-size:16px!important} /* iOS 줌 방지 */
+
+  /* 보고서 */
+  .rp-page{width:100%!important;transform:none!important;margin:0 0 16px!important;border-radius:8px}
+
+  /* 도막두께 계산기 패널 */
+  #tk-calc-panel{width:calc(100vw - 24px)!important;right:12px!important;left:12px!important}
+
+  /* 연도+새로고침 버튼 줄 */
+  #db-year-sel{font-size:13px}
+}
+
+/* 아주 작은 화면 (iPhone SE 등 375px) */
+@media(max-width:400px){
+  .nav-item{min-width:44px;padding:5px 0}
+  .nav-item .icon{font-size:16px}
+  .topbar-title{font-size:13px}
+  .page{padding:10px}
 }
 </style>
 </head>
@@ -225,11 +346,11 @@ tr.drag-source{opacity:.4}
 
 <!-- ══ 사이드바 ══ -->
 <aside class="sidebar">
+  <!-- 데스크톱: 로고+시스템탭 -->
   <div class="logo">
     <div class="logo-tag">⬡ FITI × HMC</div>
     <div class="logo-title" id="sys-title">도장 평가 시스템</div>
     <div class="logo-sub" id="sys-sub">차체도장 용역 관리</div>
-    <!-- 시스템 탭 -->
     <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
       <button id="sys-tab-body" onclick="switchSystem('body')"
         style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--b);background:var(--bbg);color:var(--b)">
@@ -249,6 +370,20 @@ tr.drag-source{opacity:.4}
     </select>
     <button style="width:26px;height:26px;border-radius:5px;background:var(--bg3);border:1px solid var(--border2);color:var(--tx2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0" onclick="addYear()" title="연도 추가">+</button>
   </div>
+
+  <!-- 모바일: 시스템 전환 버튼 (하단탭 맨 앞) -->
+  <div class="sys-tab-row" style="display:none">
+    <button id="sys-tab-body-m" onclick="switchSystem('body')"
+      style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--b);background:var(--bbg);color:var(--b);width:38px">
+      차체
+    </button>
+    <button id="sys-tab-wheel-m" onclick="switchSystem('wheel')"
+      style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3);width:38px">
+      휠
+    </button>
+  </div>
+
+  <!-- 네비게이션 (데스크톱: 세로 / 모바일: 가로 탭바) -->
   <div class="nav-sec">
     <div class="nav-lbl">메인</div>
     <button class="nav-item" onclick="nav('dashboard',this);dbInit()"><span class="icon">▦</span><span>대시보드</span></button>
@@ -257,13 +392,15 @@ tr.drag-source{opacity:.4}
   <div class="nav-sec">
     <div class="nav-lbl">시험</div>
     <button class="nav-item" onclick="nav('thickness',this);tkInit()"><span class="icon">📐</span><span>중간결과</span></button>
-    <button class="nav-item" onclick="nav('results',this);rsInit()"><span class="icon">✏</span><span>시험 결과</span></button>
+    <button class="nav-item" onclick="nav('results',this);rsInit()"><span class="icon">✏</span><span>시험결과</span></button>
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">알림</div>
     <button class="nav-item" onclick="nav('notifications',this);ngInit()"><span class="icon">🔔</span><span>NG 알림</span><span class="nav-badge" id="ng-badge" style="display:none">0</span></button>
     <button class="nav-item" onclick="nav('report',this);rpInit()"><span class="icon">📄</span><span>보고서</span></button>
   </div>
+
+  <!-- 데스크톱 전용 푸터 -->
   <div class="sidebar-footer">
     <div class="ava">양</div>
     <span style="font-size:12px;font-weight:500">양지원 연구원</span>
@@ -288,10 +425,10 @@ tr.drag-source{opacity:.4}
   </div>
 
   <div style="padding:20px">
-    <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start">
+    <div id="orders-layout" style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start">
 
       <!-- 왼쪽: 차수 목록 -->
-      <div>
+      <div id="order-list-panel">
         <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding:0 2px">차수 목록</div>
         <div class="order-list" id="order-list">
           <!-- JS 렌더 -->
@@ -5635,11 +5772,16 @@ function switchSystem(sys){
   CUR_SYS = sys;
   const isWheel = sys === 'wheel';
 
-  // 탭 버튼 스타일
+  // 탭 버튼 스타일 (데스크톱)
   document.getElementById('sys-tab-body').style.cssText =
     `flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid ${isWheel?'var(--border2)':'var(--b)'};background:${isWheel?'var(--bg3)':'var(--bbg)'};color:${isWheel?'var(--tx3)':'var(--b)'}`;
   document.getElementById('sys-tab-wheel').style.cssText =
     `flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid ${isWheel?'var(--b)':'var(--border2)'};background:${isWheel?'var(--bbg)':'var(--bg3)'};color:${isWheel?'var(--b)':'var(--tx3)'}`;
+  // 모바일 탭 버튼 스타일
+  const mbBody = document.getElementById('sys-tab-body-m');
+  const mbWheel = document.getElementById('sys-tab-wheel-m');
+  if(mbBody) mbBody.style.cssText=`padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid ${isWheel?'var(--border2)':'var(--b)'};background:${isWheel?'var(--bg3)':'var(--bbg)'};color:${isWheel?'var(--tx3)':'var(--b)'};width:38px`;
+  if(mbWheel) mbWheel.style.cssText=`padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid ${isWheel?'var(--b)':'var(--border2)'};background:${isWheel?'var(--bbg)':'var(--bg3)'};color:${isWheel?'var(--b)':'var(--tx3)'};width:38px`;
 
   // 로고 텍스트
   document.getElementById('sys-title').textContent = isWheel ? '도장 평가 시스템' : '도장 평가 시스템';
