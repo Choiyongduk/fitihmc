@@ -1,6 +1,5 @@
 // ======================================================
-// // common.js — 공통 상태·DB·저장/복원·switchSystem·유틸
-// FITI × HMC 도장 평가 시스템
+// common.js — 공통: 단가표·DB·저장·switchSystem·헬퍼
 // ======================================================
 
 // ══════════════════════════════════════════════════════
@@ -249,6 +248,9 @@ function updateYearCost(){
   }
 }
 
+// ══════════════════════════════════════════════════════
+// 신규 차수 등록 (메일 파싱 우선)
+// ══════════════════════════════════════════════════════
 const STORAGE_KEY = 'fiti_hmc_data_v1';
 
 // 조용한 자동저장 (버튼 피드백 없음)
@@ -345,6 +347,8 @@ function openModal(id){
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 // ══════════════════════════════════════════════════════
+// 시스템 전환 (차체도장 ↔ 휠도장)
+// ══════════════════════════════════════════════════════
 function switchSystem(sys){
   CUR_SYS = sys;
   const isWheel = sys === 'wheel';
@@ -388,9 +392,7 @@ function switchSystem(sys){
     });
   }
 
-  // 중간결과 탭 show/hide
   syncNavBySystem();
-
   // 현재 페이지 새로고침
   const activePage = document.querySelector('.page.active');
   if(activePage){
@@ -428,6 +430,71 @@ function calcOrderCostForSys(order, sys){
   return order.specimens.reduce((s,sp)=>
     s+sp.sections.reduce((ss,sec)=>
       ss+sec.items.filter(it=>it.checked).reduce((a,it)=>a+it.price,0),0),0);
+}
+
+// ══════════════════════════════════════════════════════
+// 휠도장 의뢰 관리
+// ══════════════════════════════════════════════════════
+
+// 휠도장용 buildOrder (차체도장 buildOrder와 분리)
+function buildOrderWheel(o){
+  const sections = (o.sections||['완성도막']).map(sname=>({
+    name: sname,
+    items: (DEFAULT_ITEMS_WHEEL[sname]||DEFAULT_ITEMS_WHEEL['완성도막']).map(iname=>({
+      name: iname,
+      price: PRICE_MAP_WHEEL[iname]||0,
+      checked: true
+    })),
+    receiptOk: false, receiptDate:'', receiptEa:'', receiptNote:''
+  }));
+  const specimenList = (o.colors||[]).map(color=>({
+    maker: o.maker||'', color,
+    sections: JSON.parse(JSON.stringify(sections))
+  }));
+  return {
+    id: o.id||('w_'+Date.now()),
+    cha: o.cha||'',
+    purpose: o.purpose||'',
+    mgr: o.mgr||'',
+    date: o.date||'',
+    maker: o.maker||'',
+    colors: o.colors||[],
+    cnt: o.cnt||1,
+    status: o.status||'wait',
+    specimens: specimenList,
+    tkData: {},
+    rsData: {},
+    ngRead: {},
+    noteRead: {},
+    sendLog: []
+  };
+}
+
+// 휠도장 의뢰관리 init — 차체도장과 공유하되 activeDB() 참조
+function wlOrdersInit(){
+  // 기존 의뢰관리 탭 함수들이 activeDB()를 쓰도록 이미 되어있음
+  // 연도 selector 동기화 후 renderOrderList 호출
+  const sel = document.getElementById('year-sel');
+  const db = activeDB();
+  CY = sel?.value || Object.keys(db.orders).sort().reverse()[0] || '2025';
+  renderOrderList();
+  renderOrderDetail(null);
+  updateYearCost();
+}
+
+// 휠도장 중간결과 탭 (현재는 placholder — 차체와 동일 UI 재활용 예정)
+function wlThicknessInit(){
+  tkInit(); // 동일 UI, activeDB() 참조로 자동 분리
+}
+
+// 휠도장 시험결과 탭
+function wlResultsInit(){
+  rsInit();
+}
+
+// 휠도장 보고서 탭
+function wlReportInit(){
+  rpInit();
 }
 
 function editContractAmount(){
@@ -499,54 +566,10 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 // ══════════════════════════════════════════════════════
-// 네비게이션 / 연도 관리
-// ══════════════════════════════════════════════════════
-function nav(id, btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+id)?.classList.add('active');
-  if(btn) btn.classList.add('active');
-}
-
-function changeYear(y){
-  CY = y;
-  const chip = document.getElementById('year-chip');
-  if(chip) chip.textContent = y+'년';
-  const noYear = document.getElementById('no-year');
-  if(noYear) noYear.value = y;
-  const db = activeDB(); const ct = activeCONTRACT();
-  if(!db.orders[y]) db.orders[y] = [];
-  if(!ct[y]) ct[y] = 0;
-  selectedOrderId = db.orders[y][0]?.id || null;
-  renderOrderList();
-  const det = document.getElementById('order-detail');
-  if(selectedOrderId) renderOrderDetail(selectedOrderId);
-  else if(det) det.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--tx3)"><div>차수를 선택하거나 새로 등록하세요</div></div>`;
-  updateYearCost();
-}
-
-function addYear(){
-  const y = prompt('추가할 연도 (예: 2026)');
-  if(!y || !/^\d{4}$/.test(y.trim())) return;
-  const yr = y.trim();
-  const db = activeDB(); const ct = activeCONTRACT();
-  if(db.orders[yr]){ alert('이미 존재합니다'); return; }
-  db.orders[yr] = []; ct[yr] = 0;
-  const sel = document.getElementById('year-sel');
-  const opt = document.createElement('option');
-  opt.value = yr; opt.textContent = yr+'년';
-  sel.insertBefore(opt, sel.firstChild);
-  sel.value = yr;
-  changeYear(yr);
-  autoSave();
-}
-
-// ══════════════════════════════════════════════════════
-// 시스템 전환 시 메뉴 표시/숨김
+// 시스템 전환 시 중간결과 탭 show/hide
 // ══════════════════════════════════════════════════════
 function syncNavBySystem(){
-  const isBody  = CUR_SYS === 'body';
-  // 중간결과 탭은 차체도장만 표시
+  const isBody = CUR_SYS === 'body';
   document.querySelectorAll('[data-nav="thickness"]').forEach(el=>{
     el.style.display = isBody ? '' : 'none';
   });

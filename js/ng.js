@@ -1,8 +1,8 @@
 // ======================================================
-// // ng.js — NG 알림 (차체·휠·DGU 내부 분기)
-// 의존: common.js
+// ng.js — NG알림·발송·설정
 // ======================================================
 
+// ══════════════════════════════════════════════════════
 // 설정 모달 — API 키 관리
 // ══════════════════════════════════════════════════════
 const API_KEY_STORAGE = 'fiti_anthropic_key';
@@ -424,38 +424,5 @@ function sendNotification(type){
   openModal('send-notification-modal');
 }
 
-
 // ══════════════════════════════════════════════════════
-// 시스템별 NG 기준 분기
-// ══════════════════════════════════════════════════════
-function ngGetJudgeSpec(itemName, sys){
-  if(sys === 'wheel'){
-    const wheelSpecs = {
-      '부착성':      {pass: d=> d?.grade && adhesionNum(d.grade)<=2.5},
-      '내수성':      {pass: d=> d?.appearance==='이상없음' && adhesionNum(d.adhesion||'')<=2.5},
-      '내습성':      {pass: d=> d?.appearance==='이상없음' && adhesionNum(d.adhesion||'')<=2.5},
-      '내치핑성':    {pass: d=> parseFloat(d?.grade)<=3},
-      '내염수분무성':{pass: d=> parseFloat(d?.peeling)<=3},
-      'CASS시험':    {pass: d=> d?.result==='이상없음'},
-    };
-    return wheelSpecs[itemName] || null;
-  }
-  if(sys === 'dgu'){
-    const dguSpecs = {
-      'KNIFE CUT':  {pass: d=> (d?.cf||0) >= 90},
-      '전단강도':   {pass: d=> (d?.avg||0) >= 3},
-      '경도':       {pass: d=> { const v=d?.avg||0; return v>=45&&v<=70; }},
-      '인열강도':   {pass: d=> (d?.avg||0) >= 15},
-    };
-    return dguSpecs[itemName] || null;
-  }
-  return null; // 차체: 기존 rsAutoJudge 사용
-}
-
-// ngRefresh를 시스템별로 분기
-const _ngRefreshOrig = ngRefresh;
-function ngRefresh(){
-  if(CUR_SYS === 'body'){ _ngRefreshOrig(); return; }
-  // 휠/DGU는 동일 UI에서 해당 DB만 참조 (activeDB()가 이미 분기)
-  _ngRefreshOrig();
-}
+// 대시보드

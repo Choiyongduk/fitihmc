@@ -1,6 +1,5 @@
 // ======================================================
-// // body.js — 차체도장 전용: 의뢰관리·시험항목·시료수령·파싱
-// 의존: common.js
+// body.js — 차체도장: 의뢰관리·시험항목·파싱·비용
 // ======================================================
 
 // ══════════════════════════════════════════════════════
@@ -27,8 +26,43 @@ function buildOrder(o){
 // ══════════════════════════════════════════════════════
 // 네비게이션
 // ══════════════════════════════════════════════════════
+function nav(id, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
 
+function changeYear(y){
+  CY = y;
+  document.getElementById('year-chip').textContent = y+'년';
+  document.getElementById('no-year').value = y;
+  const db = activeDB(); const ct = activeCONTRACT();
+  if(!db.orders[y]) db.orders[y]=[];
+  if(!ct[y]) ct[y]=0;
+  selectedOrderId = db.orders[y][0]?.id||null;
+  renderOrderList();
+  if(selectedOrderId) renderOrderDetail(selectedOrderId);
+  else document.getElementById('order-detail').innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--tx3)"><div>차수를 선택하거나 새로 등록하세요</div></div>`;
+  updateYearCost();
+}
 
+function addYear(){
+  const y=prompt('추가할 연도 (예: 2026)');
+  if(!y||!/^\d{4}$/.test(y.trim())) return;
+  const yr=y.trim();
+  const db=activeDB(); const ct=activeCONTRACT();
+  if(db.orders[yr]){alert('이미 존재합니다');return;}
+  db.orders[yr]=[];
+  ct[yr]=0;
+  const sel=document.getElementById('year-sel');
+  const opt=document.createElement('option');
+  opt.value=yr;opt.textContent=yr+'년';
+  sel.insertBefore(opt,sel.firstChild);
+  sel.value=yr;
+  changeYear(yr);
+  autoSave();
+}
 
 // ══════════════════════════════════════════════════════
 // 차수 목록 렌더
@@ -735,6 +769,9 @@ function updateReceiptStatus(orderId){
 
 
 
+// ══════════════════════════════════════════════════════
+// 비용산정 탭
+// ══════════════════════════════════════════════════════
 function renderCostTab(order){
   return `<div id="cost-content-${order.id}">${buildCostHtml(order)}</div>`;
 }
@@ -827,6 +864,125 @@ function editItemPrice(orderId, spIdx, secIdx, itemIdx, td){
   input.addEventListener('keydown',e=>{ if(e.key==='Enter') input.blur(); });
 }
 
+// ══ DGU 전용 STEP2 함수들 ══
+
+function noDguBackToStep1(){
+  document.getElementById('no-step1').style.display='block';
+  document.getElementById('no-step2-dgu').style.display='none';
+}
+
+// 피착제 계층을 편집 가능한 행들로 렌더
+function noDguRenderSubstrates(catData){
+  const wrap = document.getElementById('no-dgu-substrate-wrap');
+  if(!wrap) return;
+  const rows = [];
+  Object.entries(catData).forEach(([cat, subs])=>{
+    Object.entries(subs).forEach(([sub, codes])=>{
+      const key = `${cat}__${sub}`;
+      const codesStr = codes.join(', ');
+      rows.push({cat, sub, codes: codesStr});
+    });
+  });
+  wrap.innerHTML = rows.map((r,i)=>`
+    <div data-dgu-row="${i}" style="display:grid;grid-template-columns:70px 1fr 1fr 28px;gap:4px;align-items:center;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:5px">
+      <select onchange="this.closest('[data-dgu-row]').dataset.cat=this.value" style="font-size:11px;padding:3px;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--tx);outline:none">
+        ${['GLASS','선루프','도장'].map(c=>`<option value="${c}" ${c===r.cat?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <input value="${r.sub}" placeholder="업체명" data-field="sub"
+        style="font-size:11px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--tx);outline:none;width:100%">
+      <input value="${r.codes}" placeholder="제품코드 (쉼표 구분)" data-field="codes"
+        style="font-size:11px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--tx);outline:none;width:100%;font-family:var(--mono)">
+      <button onclick="this.closest('[data-dgu-row]').remove()"
+        style="width:24px;height:24px;border:none;background:none;color:var(--tx3);cursor:pointer;border-radius:4px;font-size:15px;display:flex;align-items:center;justify-content:center"
+        onmouseover="this.style.background='var(--rbg)';this.style.color='var(--r)'"
+        onmouseout="this.style.background='none';this.style.color='var(--tx3)'">×</button>
+    </div>`).join('');
+}
+
+function noDguAddSubstrate(){
+  const wrap = document.getElementById('no-dgu-substrate-wrap');
+  const idx = wrap.children.length;
+  const div = document.createElement('div');
+  div.dataset.dguRow = idx;
+  div.style.cssText = 'display:grid;grid-template-columns:70px 1fr 1fr 28px;gap:4px;align-items:center;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:5px';
+  div.innerHTML = `
+    <select style="font-size:11px;padding:3px;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--tx);outline:none">
+      <option value="GLASS">GLASS</option><option value="선루프">선루프</option><option value="도장">도장</option>
+    </select>
+    <input placeholder="업체명" data-field="sub" style="font-size:11px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--tx);outline:none;width:100%">
+    <input placeholder="제품코드 (쉼표 구분)" data-field="codes" style="font-size:11px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--tx);outline:none;width:100%;font-family:var(--mono)">
+    <button onclick="this.closest('[data-dgu-row]').remove()" style="width:24px;height:24px;border:none;background:none;color:var(--tx3);cursor:pointer;border-radius:4px;font-size:15px;display:flex;align-items:center;justify-content:center"
+      onmouseover="this.style.background='var(--rbg)';this.style.color='var(--r)'" onmouseout="this.style.background='none';this.style.color='var(--tx3)'">×</button>`;
+  wrap.appendChild(div);
+}
+
+// DGU 차수 등록
+function registerOrderDgu(){
+  const cha = document.getElementById('no-cha-dgu').value.trim();
+  if(!cha){alert('차수를 입력하세요');document.getElementById('no-cha-dgu').focus();return;}
+  const yr  = document.getElementById('no-year-dgu').value;
+  const db  = DB_DGU;
+  if(!db.orders[yr]) db.orders[yr]=[];
+
+  const makerStr = document.getElementById('no-maker-dgu').value.trim();
+  const makers = makerStr ? makerStr.split(/[,，]+/).map(s=>s.trim()).filter(Boolean) : ['미지정'];
+
+  // 피착제 행에서 계층 구성
+  const hierarchy = {};
+  makers.forEach(mk=>{ hierarchy[mk]={}; });
+  const maker = makers[0];
+  if(!hierarchy[maker]) hierarchy[maker]={};
+
+  document.querySelectorAll('#no-dgu-substrate-wrap [data-dgu-row]').forEach(row=>{
+    const catEl = row.querySelector('select');
+    const subEl = row.querySelector('[data-field="sub"]');
+    const codesEl = row.querySelector('[data-field="codes"]');
+    const cat = catEl?.value||'GLASS';
+    const sub = subEl?.value?.trim()||'';
+    const codes = codesEl?.value ? codesEl.value.split(/[,，]+/).map(s=>s.trim()).filter(Boolean) : [];
+    if(!sub) return;
+    if(!hierarchy[maker][cat]) hierarchy[maker][cat]={};
+    hierarchy[maker][cat][sub] = codes;
+  });
+
+  // 시험항목
+  const secs = [];
+  if(document.getElementById('dgu-test-knifecut')?.checked) secs.push('KNIFE CUT');
+  if(document.getElementById('dgu-test-hardness')?.checked)  secs.push('경도');
+  if(document.getElementById('dgu-test-sealer')?.checked)    secs.push('실러물성');
+  if(document.getElementById('dgu-test-shear')?.checked)     secs.push('전단강도');
+  if(!secs.length) secs.push('KNIFE CUT');
+
+  // noParsedData 갱신
+  const colorsByMaker = {};
+  makers.forEach(mk=>{
+    colorsByMaker[mk]=[];
+    Object.entries(hierarchy[mk]||{}).forEach(([cat,subs])=>{
+      Object.entries(subs).forEach(([sub,codes])=>{
+        if(codes.length) codes.forEach(c=>colorsByMaker[mk].push(`${cat}_${sub}_${c}`));
+        else colorsByMaker[mk].push(`${cat}_${sub}`);
+      });
+    });
+  });
+  noParsedData = { ...noParsedData, makers, colorsByMaker,
+    sectionItems: Object.fromEntries(secs.map(s=>[s,[...(DEFAULT_ITEMS_DGU[s]||[])]])),
+    sectionEA: Object.fromEntries(secs.map(s=>[s,1])),
+    _isDgu:true, dguHierarchy: hierarchy };
+
+  // 기존 registerOrder 로직 재사용 (DGU 분기 타도록)
+  document.getElementById('no-year').value = yr;
+  document.getElementById('no-cha').value  = cha;
+  document.getElementById('no-purpose').value = document.getElementById('no-purpose-dgu').value;
+  const mgrDgu = document.getElementById('no-mgr-dgu').value;
+  [...document.getElementById('no-mgr').options].forEach(o=>o.selected=o.value===mgrDgu);
+  document.getElementById('no-date').value = document.getElementById('no-date-dgu').value;
+  document.getElementById('no-maker').value = makerStr;
+  document.getElementById('no-cnt').value   = document.getElementById('no-cnt-dgu').value;
+  document.getElementById('no-colors').value = Object.values(colorsByMaker).flat().join(',');
+
+  registerOrder();
+}
+
 function renameItem(orderId, spIdx, secIdx, itemIdx, newName){
   if(!newName) return;
   const order=(activeDB().orders[CY]||[]).find(o=>o.id===orderId); if(!order) return;
@@ -861,9 +1017,6 @@ function refreshOrderCost(orderId){
 
 // ══════════════════════════════════════════════════════
 // 비용 계산
-// ══════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════
-// 신규 차수 등록 (메일 파싱 우선)
 // ══════════════════════════════════════════════════════
 let noParsedData = null; // 파싱 결과 임시 저장
 
@@ -1720,82 +1873,192 @@ function noRunParse(){
 
 // ── 휠도장 전용 파싱
 // ── DGU 텍스트 파싱 (MS715-25 의뢰서)
-
-// ══════════════════════════════════════════════════════
-// 차수 등록 디스패처
-// ══════════════════════════════════════════════════════
 function registerOrder(){
-  if(CUR_SYS === 'dgu')   { registerOrderDgu();   return; }
-  if(CUR_SYS === 'wheel') { registerOrderWheel(); return; }
-  registerOrderBody();
-}
+  const cha=document.getElementById('no-cha').value.trim();
+  if(!cha){alert('차수를 입력하세요');document.getElementById('no-cha').focus();return;}
+  const yr=document.getElementById('no-year').value;
+  const db=activeDB();
+  if(!db.orders[yr]) db.orders[yr]=[];
 
-// ── 공통 마무리 (body/wheel/dgu 모두 호출)
-function _finalizeOrder(yr, db, makerStr, allColors, specimens){
-  const order = {
-    id: (CUR_SYS==='wheel'?'w_':CUR_SYS==='dgu'?'d_':'o_') + Date.now(),
-    cha:     document.getElementById('no-cha').value.trim(),
-    purpose: document.getElementById('no-purpose').value || '',
-    mgr:     document.getElementById('no-mgr').value,
-    date:    document.getElementById('no-date').value || new Date().toISOString().slice(0,10),
-    maker: makerStr, colors: allColors,
-    cnt: parseInt(document.getElementById('no-cnt').value) || 0,
-    status: 'wait', specimens,
-  };
-  db.orders[yr].push(order);
-  closeModal('new-order-modal');
-  autoSave();
-  if(yr !== CY){ document.getElementById('year-sel').value = yr; changeYear(yr); }
-  else { selectedOrderId = order.id; renderOrderList(); renderOrderDetail(order.id); updateYearCost(); }
-}
-
-// ── 차체도장 차수 등록
-function registerOrderBody(){
-  const cha = document.getElementById('no-cha').value.trim();
-  if(!cha){ alert('차수를 입력하세요'); document.getElementById('no-cha').focus(); return; }
-  const yr = document.getElementById('no-year').value;
-  const db = DB;
-  if(!db.orders[yr]) db.orders[yr] = [];
+  // UI에서 업체별 차종 분리 데이터 최신화
   noSyncColorHidden();
-  const d = noParsedData || {makers:[],colorsByMaker:{},sectionItems:{},sectionEA:{}};
+
+  const d = noParsedData||{makers:[],colorsByMaker:{},sectionItems:{},sectionEA:{}};
   const makerStr = document.getElementById('no-maker').value.trim();
   const colorStr = document.getElementById('no-colors').value.trim();
+
+  // makers: UI 입력 우선, 없으면 d.makers
   let makers = makerStr
     ? makerStr.split(/[,，]+/).map(s=>s.trim()).filter(Boolean)
     : (d.makers.length ? d.makers : ['미지정']);
+
+  // colorsByMaker: UI rows에서 이미 noSyncColorHidden()으로 갱신됨 → d.colorsByMaker 사용
+  // 업체별 차종 맵 구성
   const colorsByMaker = {};
   makers.forEach(mk=>{
+    // UI row 입력값 우선
     const row = document.querySelector(`[data-maker-row="${mk}"] input`);
-    if(row && row.value.trim()) colorsByMaker[mk] = row.value.split(/[,，]+/).map(s=>s.trim()).filter(Boolean);
-    else if(d.colorsByMaker?.[mk]?.length) colorsByMaker[mk] = d.colorsByMaker[mk];
-    else { const fb = colorStr ? colorStr.split(/[,，]+/).map(s=>s.trim()).filter(Boolean) : []; colorsByMaker[mk] = fb.length ? fb : ['미지정']; }
+    if(row && row.value.trim()){
+      colorsByMaker[mk] = row.value.split(/[,，]+/).map(s=>s.trim()).filter(Boolean);
+    } else if(d.colorsByMaker?.[mk]?.length){
+      colorsByMaker[mk] = d.colorsByMaker[mk];
+    } else {
+      // 전체 color 문자열에서 추출 또는 기본값
+      const fallback = colorStr ? colorStr.split(/[,，]+/).map(s=>s.trim()).filter(Boolean) : [];
+      colorsByMaker[mk] = fallback.length ? fallback : ['미지정'];
+    }
   });
+
+  // 전체 colors (중복 제거)
   const allColors = [...new Set(Object.values(colorsByMaker).flat())];
-  const secs2 = Object.keys(d.sectionItems).length ? Object.keys(d.sectionItems) : ['완성도막'];
+
+  const defItems = activeDEFAULT_ITEMS();
+  const secs2 = Object.keys(d.sectionItems).length ? Object.keys(d.sectionItems) : (CUR_SYS==='dgu' ? ['KNIFE CUT','전단강도','경도','실러물성'] : ['완성도막']);
   const singleSecs = ['재도장','층간부착','O/B층간부착','O/B 층간부착'];
-  let specimens = [];
-  if(d._fromXlsx && d.specimens?.length){ specimens = d.specimens; }
-  else {
+
+  let specimens;
+  if(d._fromXlsx && d.specimens && d.specimens.length){
+    specimens = d.specimens;
+  } else if(CUR_SYS === 'dgu'){
+    // ── DGU 전용 비용 계산
+    // 규칙:
+    //  - 내열/내수/내약품/내열CYCLE/시료제작비: 차수 전체에서 1회
+    //  - 인장강도/신율/인열강도: 실러업체 수 × 단가
+    //  - KNIFE CUT/전단강도/경도: 피착제 조합 수 × 단가 (피착제별 1행)
+    //  - 전단모듈러스: 피착제 조합 수(상태만) × 단가
+    const makerCount = makers.length;
+    // 피착제 총 조합 수 (KNIFE CUT / 전단강도 / 경도용)
+    const totalCombinations = Object.values(colorsByMaker).reduce((s,cs)=>s+cs.length,0)||1;
+    specimens = [];
+    // 행1: 노화조건 고정비 + 시료제작비 (차수당 1회)
+    const fixedItems = [];
+    const fixedNames = ['내열','내수','내약품','내열CYCLE','시료제작비'];
+    const hasAgingTest = secs2.some(s=>['KNIFE CUT','전단강도','경도'].includes(s));
+    fixedNames.forEach(n=>{
+      if(n==='시료제작비' || (hasAgingTest && ['내열','내수','내약품','내열CYCLE'].includes(n))){
+        fixedItems.push({name:n, price:PRICE_MAP_DGU[n]||0, checked:true});
+      }
+    });
+    if(fixedItems.length){
+      specimens.push({
+        maker:'[차수 공통]', color:'노화조건·시료제작비',
+        sections:[{name:'공통비용', receiptEa:1, receiptOk:false, receiptDate:'', receiptNote:'', items:fixedItems}],
+        receiptDate:'', receiptCnt:'', receiptOk:false
+      });
+    }
+    // 행2: 실러물성 (실러업체 수 × 단가)
+    const seaItems = ['인장강도','신율','인열강도'].filter(n=>
+      secs2.some(sec=>(d.sectionItems[sec]||defItems[sec]||[]).includes(n))
+    );
+    if(seaItems.length){
+      specimens.push({
+        maker:'[실러업체]', color:`${makerCount}개사 × 실러물성`,
+        sections:[{name:'실러물성', receiptEa:1, receiptOk:false, receiptDate:'', receiptNote:'',
+          items: seaItems.map(n=>({name:n, price:(PRICE_MAP_DGU[n]||0)*makerCount, checked:true}))
+        }],
+        receiptDate:'', receiptCnt:'', receiptOk:false
+      });
+    }
+    // 행3~N: 피착제별 KNIFE CUT / 전단강도 / 경도 (조합 수 × 단가)
+    // KNIFE CUT: (피착제 조합수) × 1회 단가 → 각 피착제별 행
+    const perComboSecs = ['KNIFE CUT','전단강도','경도'];
+    makers.forEach(maker=>{
+      const colors = colorsByMaker[maker]||['미지정'];
+      colors.forEach(color=>{
+        const secItems = [];
+        secs2.forEach(sec=>{
+          if(!perComboSecs.includes(sec)) return;
+          const rawItems = d.sectionItems[sec]||(defItems[sec]||[]);
+          const items = rawItems.filter(n=>perComboSecs.includes(n)||n==='전단모듈러스').map(n=>({
+            name: n,
+            price: n==='전단모듈러스' ? PRICE_MAP_DGU['전단모듈러스']||0 : PRICE_MAP_DGU[n]||0,
+            checked: true
+          }));
+          if(items.length) secItems.push(...items.map(it=>({...it, _sec:sec})));
+        });
+        if(secItems.length){
+          const grouped = {};
+          secItems.forEach(({_sec,...it})=>{
+            if(!grouped[_sec]) grouped[_sec]=[];
+            grouped[_sec].push(it);
+          });
+          specimens.push({
+            maker, color,
+            sections: Object.entries(grouped).map(([sec,items])=>({
+              name:sec, receiptEa:1, receiptOk:false, receiptDate:'', receiptNote:'', items
+            })),
+            receiptDate:'', receiptCnt:'', receiptOk:false
+          });
+        }
+      });
+    });
+    if(!specimens.length){
+      specimens = [{maker:'미지정', color:'미지정', sections:[{name:'KNIFE CUT',receiptEa:1,receiptOk:false,receiptDate:'',receiptNote:'',items:[{name:'KNIFE CUT',price:20000,checked:true}]}], receiptDate:'',receiptCnt:'',receiptOk:false}];
+    }
+  } else {
+    specimens = [];
     const makerFirstColor = {};
     makers.forEach(maker=>{
-      (colorsByMaker[maker]||[]).forEach(color=>{
-        const isFirst = !makerFirstColor[maker];
-        if(isFirst) makerFirstColor[maker] = color;
+      const makerColors = colorsByMaker[maker]||[];
+      makerColors.forEach(color=>{
+        const isFirstColor = !makerFirstColor[maker];
+        if(isFirstColor) makerFirstColor[maker] = color;
         const sp = {maker, color, sections:[], receiptDate:'', receiptCnt:'', receiptOk:false};
+
+        // 휠도장 도막두께 포인트 수 읽기 (포인트 수 × 25,000원)
+        const _tkKey = `${maker}__${color}`;
+        const _tkRow = document.querySelector(`[data-tk-point-row="${_tkKey}"] input`)
+                    || document.querySelector('[data-tk-point-row="총계"] input');
+        const _tkPoints = _tkRow ? (parseInt(_tkRow.value)||0) : 0;
+
         secs2.forEach(sec=>{
-          const rawItems = d.sectionItems[sec] || (DEFAULT_ITEMS[sec] || DEFAULT_ITEMS['완성도막']);
+          const rawItems = d.sectionItems[sec]||(defItems[sec]||defItems['완성도막']);
+          const autoEa = singleSecs.includes(sec) ? 1 : (d.sectionEA[sec]||null);
           sp.sections.push({
-            name:sec, receiptEa: singleSecs.includes(sec)?1:(d.sectionEA[sec]||null),
-            receiptOk:false, receiptDate:'', receiptNote:'',
-            items: rawItems.map(n=>{ const iName=normItemName(n,sec); return {name:iName, price:PRICE_MAP[iName]||0, checked:(n==='ATR분析'?isFirst:true)}; })
+            name: sec,
+            receiptEa: autoEa,
+            receiptOk: false,
+            receiptDate: '',
+            receiptNote: '',
+            items: rawItems.map(n=>{
+              const iName = normItemName(n, sec);
+              const price = (CUR_SYS==='wheel' && iName==='도막두께' && _tkPoints>0)
+                ? _tkPoints * 25000
+                : getPrice(iName);
+              return {
+                name: iName, price,
+                checked: (n==='ATR분析'||n==='IR분析'||/^ATR|^IR/i.test(n)) ? isFirstColor : true,
+              };
+            })
           });
         });
         specimens.push(sp);
       });
     });
+    if(!specimens.length) specimens = [{maker:'미지정', color:'미지정', sections:secs2.map(sec=>({name:sec,receiptEa:null,receiptOk:false,receiptDate:'',receiptNote:'',items:(d.sectionItems[sec]||(defItems[sec]||defItems['완성도막'])).map(n=>({name:normItemName(n,sec),price:getPrice(normItemName(n,sec)),checked:true}))}))}];
   }
-  if(!specimens.length) specimens = [{maker:'미지정',color:'미지정',sections:secs2.map(sec=>({name:sec,receiptEa:null,receiptOk:false,receiptDate:'',receiptNote:'',items:(d.sectionItems[sec]||(DEFAULT_ITEMS[sec]||DEFAULT_ITEMS['완성도막'])).map(n=>({name:normItemName(n,sec),price:PRICE_MAP[normItemName(n,sec)]||0,checked:true}))}))}];
-  _finalizeOrder(yr, db, makerStr, allColors, specimens);
+
+  const order = {
+    id: (CUR_SYS==='wheel'?'w':CUR_SYS==='dgu'?'d':'o')+'_'+Date.now(),
+    cha, purpose: document.getElementById('no-purpose').value||'',
+    mgr: document.getElementById('no-mgr').value,
+    date: document.getElementById('no-date').value||new Date().toISOString().slice(0,10),
+    maker: makerStr, colors: allColors, cnt: parseInt(document.getElementById('no-cnt').value)||0,
+    status: 'wait', specimens,
+  };
+
+  db.orders[yr].push(order);
+  closeModal('new-order-modal');
+  autoSave();
+  if(yr!==CY){
+    document.getElementById('year-sel').value=yr;
+    changeYear(yr);
+  } else {
+    selectedOrderId=order.id;
+    renderOrderList();
+    renderOrderDetail(order.id);
+    updateYearCost();
+  }
 }
 
 // ══════════════════════════════════════════════════════
