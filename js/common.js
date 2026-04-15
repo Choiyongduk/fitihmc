@@ -388,6 +388,9 @@ function switchSystem(sys){
     });
   }
 
+  // 중간결과 탭 show/hide
+  syncNavBySystem();
+
   // 현재 페이지 새로고침
   const activePage = document.querySelector('.page.active');
   if(activePage){
@@ -477,6 +480,7 @@ function showToast(msg, type='g', duration=3000){
 // 초기화
 // ══════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded',()=>{
+  syncNavBySystem();
   const hasSaved = loadSaved();
   // 저장된 데이터가 있으면 복원, 없으면 샘플 데이터 유지
   const defaultYear = Object.keys(activeDB().orders).find(y=>activeDB().orders[y]?.length) || '2024';
