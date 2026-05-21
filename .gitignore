@@ -1,0 +1,27 @@
+# Visual Studio 캐시
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / npm
+node_modules/
+package-lock.json
+npm-debug.log
+yarn-error.log
+
+# Editor
+.idea/
+*.swp
+*.swo
+*~
+
+# 로컬 환경
+.env
+.env.local
