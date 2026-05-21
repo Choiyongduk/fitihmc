@@ -1826,6 +1826,17 @@
                         </div>
                     </div>
                 </div>
+                <div id="page-new-order" class="page">
+                    <div class="topbar">
+                        <button class="btn ghost" onclick="goBackFromNewOrder()" style="padding:5px 10px;font-size:13px">← 의뢰 관리</button>
+                        <span class="topbar-title">신규 차수 등록</span>
+                        <span class="year-chip" id="no-sys-chip">차체도장</span>
+                    </div>
+                    <div style="padding:20px;max-width:760px;margin:0 auto" id="page-new-order-content">
+                        <!-- 폼은 JS에서 자동 이동됨 -->
+                    </div>
+                </div>
+
                 <div id="page-admin" class="page">
                     <div class="topbar">
                         <span class="topbar-title">회원관리</span>
@@ -2393,6 +2404,7 @@
         <script src="js/ng.js"></script>
         <script src="js/dashboard.js"></script>
         <script src="js/admin.js"></script>
+        <script src="js/new-order-page.js"></script>
         <script src="js/report.js"></script>
     </body>
 </html>
