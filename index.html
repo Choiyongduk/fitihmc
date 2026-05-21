@@ -348,779 +348,805 @@ tr.drag-source{opacity:.4}
 
 </head>
 <body>
-<body>
-<div class="shell">
+    <body>
+        <div class="shell">
 
-<!-- ══ 사이드바 ══ -->
-<aside class="sidebar">
-  <!-- 데스크톱: 로고+시스템탭 -->
-  <div class="logo">
-    <div class="logo-tag">⬡ FITI × HMC</div>
-    <div class="logo-title" id="sys-title">도장 평가 시스템</div>
-    <div class="logo-sub" id="sys-sub">차체도장 용역 관리</div>
-    <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
-      <button id="sys-tab-body" onclick="switchSystem('body')"
-        style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--b);background:var(--bbg);color:var(--b)">
-        차체도장
-      </button>
-      <button id="sys-tab-wheel" onclick="switchSystem('wheel')"
-        style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3)">
-        휠도장
-      </button>
-      <button id="sys-tab-dgu" onclick="switchSystem('dgu')"
-        style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3)">
-        DGU
-      </button>
-    </div>
-  </div>
-  <div class="year-bar">
-    <select class="year-sel" id="year-sel" onchange="changeYear(this.value)">
-      <option value="2025">2025년</option>
-      <option value="2024" selected>2024년</option>
-      <option value="2023">2023년</option>
-    </select>
-    <button style="width:26px;height:26px;border-radius:5px;background:var(--bg3);border:1px solid var(--border2);color:var(--tx2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0" onclick="addYear()" title="연도 추가">+</button>
-  </div>
+            <!-- ══ 사이드바 ══ -->
+            <aside class="sidebar">
+                <!-- 데스크톱: 로고+시스템탭 -->
+                <div class="logo">
+                    <div class="logo-tag">⬡ FITI × HMC</div>
+                    <div class="logo-title" id="sys-title">도장 평가 시스템</div>
+                    <div class="logo-sub" id="sys-sub">차체도장 용역 관리</div>
+                    <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+                        <button id="sys-tab-body" onclick="switchSystem('body')"
+                                style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--b);background:var(--bbg);color:var(--b)">
+                            차체도장
+                        </button>
+                        <button id="sys-tab-wheel" onclick="switchSystem('wheel')"
+                                style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3)">
+                            휠도장
+                        </button>
+                        <button id="sys-tab-dgu" onclick="switchSystem('dgu')"
+                                style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3)">
+                            DGU
+                        </button>
+                    </div>
+                </div>
+                <div class="year-bar">
+                    <select class="year-sel" id="year-sel" onchange="changeYear(this.value)">
+                        <option value="2025">2025년</option>
+                        <option value="2024" selected>2024년</option>
+                        <option value="2023">2023년</option>
+                    </select>
+                    <button style="width:26px;height:26px;border-radius:5px;background:var(--bg3);border:1px solid var(--border2);color:var(--tx2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0" onclick="addYear()" title="연도 추가">+</button>
+                </div>
 
-  <!-- 모바일: 시스템 전환 버튼 (상단탭 맨 앞) -->
-  <div class="sys-tab-row" style="display:none">
-    <button id="sys-tab-body-m" onclick="switchSystem('body')"
-      style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--b);background:var(--bbg);color:var(--b);width:38px">
-      차체
-    </button>
-    <button id="sys-tab-wheel-m" onclick="switchSystem('wheel')"
-      style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3);width:38px">
-      휠
-    </button>
-    <button id="sys-tab-dgu-m" onclick="switchSystem('dgu')"
-      style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3);width:38px">
-      DGU
-    </button>
-  </div>
+                <!-- 모바일: 시스템 전환 버튼 (상단탭 맨 앞) -->
+                <div class="sys-tab-row" style="display:none">
+                    <button id="sys-tab-body-m" onclick="switchSystem('body')"
+                            style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--b);background:var(--bbg);color:var(--b);width:38px">
+                        차체
+                    </button>
+                    <button id="sys-tab-wheel-m" onclick="switchSystem('wheel')"
+                            style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3);width:38px">
+                        휠
+                    </button>
+                    <button id="sys-tab-dgu-m" onclick="switchSystem('dgu')"
+                            style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3);width:38px">
+                        DGU
+                    </button>
+                </div>
 
-  <!-- 네비게이션 (데스크톱: 세로 / 모바일: 가로 탭바) -->
-  <div class="nav-sec">
-    <div class="nav-lbl">메인</div>
-    <button class="nav-item" onclick="nav('dashboard',this);dbInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor"/></svg></span><span>대시보드</span></button>
-    <button class="nav-item active" onclick="nav('orders',this)"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 4h4M5 7h4M5 10h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span><span>의뢰 관리</span></button>
-  </div>
-  <div class="nav-sec">
-    <div class="nav-lbl">시험</div>
-    <button class="nav-item" onclick="nav('thickness',this);tkInit()" data-nav="thickness"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 10V7M7 10V5M10 10V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span><span>중간결과</span></button>
-    <button class="nav-item" onclick="nav('results',this);rsInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L5 11H3V9L9.5 2.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.2"/></svg></span><span>시험결과</span></button>
-  </div>
-  <div class="nav-sec">
-    <div class="nav-lbl">알림</div>
-    <button class="nav-item" onclick="nav('notifications',this);ngInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5a4 4 0 0 1 4 4v3l1 1.5H2L3 8.5v-3a4 4 0 0 1 4-4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5.5 11.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.2"/></svg></span><span>NG 알림</span><span class="nav-badge" id="ng-badge" style="display:none">0</span></button>
-    <button class="nav-item" onclick="nav('report',this);rpInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 1h6l3 3v9H3V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8.5 1v3.5H12" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5 7h4M5 9.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span><span>보고서</span></button>
-  </div>
+                <!-- 네비게이션 (데스크톱: 세로 / 모바일: 가로 탭바) -->
+                <div class="nav-sec">
+                    <div class="nav-lbl">메인</div>
+                    <button class="nav-item" onclick="nav('dashboard',this);dbInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor" /><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor" /><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor" /><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor" /></svg></span><span>대시보드</span></button>
+                    <button class="nav-item active" onclick="nav('orders',this)"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2" /><path d="M5 4h4M5 7h4M5 10h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>의뢰 관리</span></button>
+                </div>
+                <div class="nav-sec">
+                    <div class="nav-lbl">시험</div>
+                    <button class="nav-item" onclick="nav('thickness',this);tkInit()" data-nav="thickness"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2" /><path d="M4 10V7M7 10V5M10 10V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>중간결과</span></button>
+                    <button class="nav-item" onclick="nav('results',this);rsInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L5 11H3V9L9.5 2.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.2" /></svg></span><span>시험결과</span></button>
+                </div>
+                <div class="nav-sec">
+                    <div class="nav-lbl">알림</div>
+                    <button class="nav-item" onclick="nav('notifications',this);ngInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5a4 4 0 0 1 4 4v3l1 1.5H2L3 8.5v-3a4 4 0 0 1 4-4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><path d="M5.5 11.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.2" /></svg></span><span>NG 알림</span><span class="nav-badge" id="ng-badge" style="display:none">0</span></button>
+                    <button class="nav-item" onclick="nav('report',this);rpInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 1h6l3 3v9H3V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><path d="M8.5 1v3.5H12" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><path d="M5 7h4M5 9.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>보고서</span></button>
+                </div>
 
-  <!-- 데스크톱 전용 푸터 -->
-  <div class="sidebar-footer">
-    <div class="ava">양</div>
-    <span style="font-size:12px;font-weight:500">양지원 연구원</span>
-    <button onclick="openModal('settings-modal')" title="설정"
-      style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:16px;color:var(--tx3);padding:2px 4px;border-radius:4px;transition:.15s"
-      onmouseover="this.style.color='var(--tx)'" onmouseout="this.style.color='var(--tx3)'">설정</button>
-  </div>
-</aside>
+                <!-- 데스크톱 전용 푸터 -->
+                <div class="sidebar-footer">
+                    <div class="ava">양</div>
+                    <span style="font-size:12px;font-weight:500">양지원 연구원</span>
+                    <button onclick="openModal('settings-modal')" title="설정"
+                            style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:16px;color:var(--tx3);padding:2px 4px;border-radius:4px;transition:.15s"
+                            onmouseover="this.style.color='var(--tx)'" onmouseout="this.style.color='var(--tx3)'">
+                        설정
+                    </button>
+                </div>
+            </aside>
 
-<!-- ══ 메인 ══ -->
-<main class="main">
+            <!-- ══ 메인 ══ -->
+            <main class="main">
 
-<!-- 의뢰 관리 -->
-<div id="page-orders" class="page active">
-  <div class="topbar">
-    <span class="topbar-title">의뢰 관리</span>
-    <span class="year-chip" id="year-chip">2024년</span>
-    <div class="topbar-right">
-      <button class="btn" onclick="openNewOrderModal()">+ 신규 차수 등록</button>
-      <button class="btn primary" onclick="saveAll()">저장</button>
-    </div>
-  </div>
+                <!-- 의뢰 관리 -->
+                <div id="page-orders" class="page active">
+                    <div class="topbar">
+                        <span class="topbar-title">의뢰 관리</span>
+                        <span class="year-chip" id="year-chip">2024년</span>
+                        <div class="topbar-right">
+                            <button class="btn" onclick="openNewOrderModal()">+ 신규 차수 등록</button>
+                            <button class="btn primary" onclick="saveAll()">저장</button>
+                        </div>
+                    </div>
 
-  <div style="padding:20px">
-    <div id="orders-layout" style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start">
+                    <div style="padding:20px">
+                        <div id="orders-layout" style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start">
 
-      <!-- 왼쪽: 차수 목록 -->
-      <div id="order-list-panel">
-        <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding:0 2px">차수 목록</div>
-        <div class="order-list" id="order-list">
-          <!-- JS 렌더 -->
+                            <!-- 왼쪽: 차수 목록 -->
+                            <div id="order-list-panel">
+                                <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding:0 2px">차수 목록</div>
+                                <div class="order-list" id="order-list">
+                                    <!-- JS 렌더 -->
+                                </div>
+                                <!-- 연도 요약 비용 -->
+                                <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:4px">
+                                    <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">연도 계약 현황</div>
+                                    <!-- 계약 총액 -->
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                                        <span style="font-size:12px;color:var(--tx2)">계약 총액</span>
+                                        <span id="contract-total" style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--tx);cursor:pointer;border-bottom:1px dashed var(--border2);padding-bottom:1px"
+                                              title="클릭해서 수정" onclick="editContractAmount()">—</span>
+                                    </div>
+                                    <!-- 시스템별 사용 비용 -->
+                                    <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:8px">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid var(--border);background:var(--bg3)">
+                                            <span style="font-size:11px;color:var(--tx3)">차체도장</span>
+                                            <span style="font-family:var(--mono);font-size:11px;color:var(--tx2)" id="used-body">—</span>
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid var(--border);background:var(--bg3)">
+                                            <span style="font-size:11px;color:var(--tx3)">휠도장</span>
+                                            <span style="font-family:var(--mono);font-size:11px;color:var(--tx2)" id="used-wheel">—</span>
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--bg3)">
+                                            <span style="font-size:11px;color:var(--tx3)">DGU</span>
+                                            <span style="font-family:var(--mono);font-size:11px;color:var(--tx2)" id="used-dgu">—</span>
+                                        </div>
+                                    </div>
+                                    <!-- 합계 사용 -->
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                                        <span style="font-size:12px;color:var(--tx2)">합계 사용</span>
+                                        <span style="font-family:var(--mono);font-size:13px;color:var(--o)" id="used-cost">—</span>
+                                    </div>
+                                    <div style="height:1px;background:var(--border);margin:8px 0"></div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center">
+                                        <span style="font-size:12px;font-weight:700;color:var(--tx2)">잔여</span>
+                                        <span style="font-family:var(--mono);font-size:14px;font-weight:700" id="remain-cost">—</span>
+                                    </div>
+                                    <!-- 진행바 -->
+                                    <div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:10px;overflow:hidden">
+                                        <div id="cost-bar" style="height:100%;border-radius:2px;background:var(--o);width:0%;transition:width .5s"></div>
+                                    </div>
+                                    <div style="font-size:10px;color:var(--tx3);margin-top:3px;text-align:right" id="cost-pct">0%</div>
+                                </div>
+                            </div>
+
+                            <!-- 오른쪽: 선택된 차수 상세 -->
+                            <div id="order-detail">
+                                <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
+
+                                    <div>왼쪽에서 차수를 선택하거나 새로 등록하세요</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 나머지 페이지들 (placeholder) -->
+                <div id="page-dashboard" class="page">
+                    <div class="topbar">
+                        <span class="topbar-title">대시보드</span>
+                        <div class="topbar-right">
+                            <select id="db-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="dbRefresh()">
+                            </select>
+                            <button class="btn" onclick="dbRefresh()" style="font-size:12px">↻ 새로고침</button>
+                        </div>
+                    </div>
+                    <div style="padding:20px;overflow-y:auto;height:calc(100vh - 56px)" id="db-body">
+                        <div style="text-align:center;padding:60px 20px;color:var(--tx3)">로딩 중...</div>
+                    </div>
+                </div>
+                <div id="page-thickness" class="page">
+                    <div class="topbar">
+                        <span class="topbar-title">중간결과 (도막두께 · 광택 · ATR)</span>
+                        <div class="topbar-right">
+                            <select id="tk-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="tkChangeYear(this.value)">
+                                <option value="2024">2024년</option>
+                                <option value="2025">2025년</option>
+                                <option value="2023">2023년</option>
+                            </select>
+                            <select id="tk-order-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);outline:none;min-width:160px" onchange="tkSelectOrder(this.value)">
+                                <option value="">-- 차수 선택 --</option>
+                            </select>
+                            <button class="btn" onclick="saveAll()" style="font-size:12px">저장</button>
+                            <button class="btn primary" onclick="sendNotification('middle')" style="font-size:12px"> 현대차 발송</button>
+                        </div>
+                    </div>
+                    <div style="padding:20px" id="tk-body">
+                        <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
+
+                            <div>상단에서 차수를 선택하세요</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="page-results" class="page">
+                    <div class="topbar">
+                        <span class="topbar-title">시험 결과</span>
+                        <div class="topbar-right">
+                            <select id="rs-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="rsChangeYear(this.value)">
+                                <option value="2024">2024년</option>
+                                <option value="2025">2025년</option>
+                                <option value="2023">2023년</option>
+                            </select>
+                            <select id="rs-order-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);outline:none;min-width:180px" onchange="rsSelectOrder(this.value)">
+                                <option value="">-- 차수 선택 --</option>
+                            </select>
+                            <button class="btn" onclick="saveAll()" style="font-size:12px">저장</button>
+                            <button class="btn primary" onclick="sendNotification('result')" style="font-size:12px"> 현대차 발송</button>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 56px);overflow:hidden" id="rs-layout">
+                        <!-- 좌측: 색상 목록 -->
+                        <div style="border-right:1px solid var(--border);overflow-y:auto;padding:12px 8px" id="rs-list">
+                            <div style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px">차수를 선택하세요</div>
+                        </div>
+                        <!-- 우측: 상세 결과 -->
+                        <div style="overflow-y:auto;padding:20px" id="rs-detail">
+                            <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
+
+                                <div>좌측에서 색상을 선택하세요</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="page-notifications" class="page">
+                    <div class="topbar">
+                        <span class="topbar-title">NG 알림</span>
+                        <div class="topbar-right">
+                            <select id="ng-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="ngRefresh()">
+                                <option value="all">전체 연도</option>
+                                <option value="2024">2024년</option>
+                                <option value="2025">2025년</option>
+                                <option value="2023">2023년</option>
+                            </select>
+                            <button class="btn" onclick="ngMarkAllRead()" style="font-size:12px">✓ 전체 확인</button>
+                            <button class="btn primary" onclick="sendNotification('ng')" style="font-size:12px"> 현대차 발송</button>
+                        </div>
+                    </div>
+                    <div style="padding:20px" id="ng-body">
+                        <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
+
+                            <div>NG 항목을 불러오는 중...</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="page-report" class="page">
+                    <div class="topbar">
+                        <span class="topbar-title">보고서</span>
+                        <div class="topbar-right">
+                            <select id="rp-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="rpChangeYear(this.value)">
+                                <option value="2024">2024년</option>
+                                <option value="2025">2025년</option>
+                                <option value="2023">2023년</option>
+                            </select>
+                            <select id="rp-order-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);outline:none;min-width:180px" onchange="rpSelectOrder(this.value)">
+                                <option value="">-- 차수 선택 --</option>
+                            </select>
+                            <button class="btn" onclick="rpPrint()" style="font-size:12px">️ 인쇄 / PDF</button>
+                        </div>
+                    </div>
+                    <div style="padding:20px;background:var(--bg);min-height:calc(100vh - 56px)" id="rp-body">
+                        <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
+
+                            <div>차수를 선택하면 보고서가 생성됩니다</div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
         </div>
-        <!-- 연도 요약 비용 -->
-        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:4px">
-          <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">연도 계약 현황</div>
-          <!-- 계약 총액 -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <span style="font-size:12px;color:var(--tx2)">계약 총액</span>
-            <span id="contract-total" style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--tx);cursor:pointer;border-bottom:1px dashed var(--border2);padding-bottom:1px"
-              title="클릭해서 수정" onclick="editContractAmount()">—</span>
-          </div>
-          <!-- 시스템별 사용 비용 -->
-          <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid var(--border);background:var(--bg3)">
-              <span style="font-size:11px;color:var(--tx3)">차체도장</span>
-              <span style="font-family:var(--mono);font-size:11px;color:var(--tx2)" id="used-body">—</span>
+
+        <!-- ══ 신규 차수 등록 모달 ══ -->
+        <!-- ══ 설정 모달 ══ -->
+        <div class="overlay" id="settings-modal">
+            <div class="modal" style="max-width:460px">
+                <div class="modal-header">
+                    <span class="modal-title">설정</span>
+                    <button class="modal-close" onclick="closeModal('settings-modal')">×</button>
+                </div>
+                <div style="padding:4px 0 12px">
+
+                    <!-- API 키 섹션 -->
+                    <div style="margin-bottom:18px">
+                        <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+                            Anthropic API 키
+                            <span id="api-key-status" style="font-size:10px;font-weight:400;padding:1px 7px;border-radius:10px"></span>
+                        </div>
+                        <div style="font-size:11px;color:var(--tx3);margin-bottom:8px;line-height:1.6">
+                            이미지 붙여넣기 파싱에 사용됩니다.<br>
+                            <a href="https://console.anthropic.com/settings/keys" target="_blank"
+                               style="color:var(--b);text-decoration:none">console.anthropic.com</a>에서 발급 가능합니다.
+                        </div>
+                        <div style="display:flex;gap:6px;align-items:center">
+                            <input id="settings-api-key" type="password"
+                                   placeholder="sk-ant-api03-..."
+                                   style="flex:1;padding:7px 10px;font-size:12px;font-family:var(--mono);background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--tx);outline:none"
+                                   onfocus="this.style.borderColor='var(--b)'" onblur="this.style.borderColor='var(--border2)'"
+                                   oninput="settingsUpdateKeyStatus()">
+                            <button onclick="settingsToggleKeyVisible()" title="표시/숨김"
+                                    style="padding:6px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;cursor:pointer;font-size:13px;color:var(--tx3)">
+                            </button>
+                        </div>
+                        <div style="display:flex;gap:6px;margin-top:8px">
+                            <button class="btn primary" onclick="settingsSaveApiKey()">저장</button>
+                            <button class="btn" onclick="settingsClearApiKey()" style="color:var(--r)">키 삭제</button>
+                        </div>
+                        <div id="settings-key-msg" style="margin-top:6px;font-size:11px"></div>
+                    </div>
+
+                    <div style="border-top:1px solid var(--border);margin-bottom:16px"></div>
+
+                    <!-- 계약금액 섹션 -->
+                    <div>
+                        <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:8px">연도별 계약금액</div>
+                        <div id="settings-contract-list" style="display:flex;flex-direction:column;gap:6px"></div>
+                        <button class="btn sm" onclick="settingsContractRefresh()" style="margin-top:8px">새로고침</button>
+                    </div>
+
+                </div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid var(--border);background:var(--bg3)">
-              <span style="font-size:11px;color:var(--tx3)">휠도장</span>
-              <span style="font-family:var(--mono);font-size:11px;color:var(--tx2)" id="used-wheel">—</span>
+        </div>
+
+        <div class="overlay" id="new-order-modal">
+            <div class="modal" style="width:560px">
+                <div class="mhead">
+                    <span style="font-size:20px"></span>
+                    <span style="font-size:15px;font-weight:700">신규 차수 등록</span>
+                </div>
+                <div class="mbody">
+
+                    <!-- STEP 1: 메일 입력 -->
+                    <div id="no-step1">
+                        <div id="no-step1-info" style="font-size:12px;color:var(--tx2);margin-bottom:12px;background:var(--bg3);border-radius:6px;padding:10px 12px;border:1px solid var(--border)">
+                            메일 본문을 붙여넣거나, 캡처 이미지를 붙여넣거나, 기존 시험항목 엑셀 파일을 올리면<br>
+                            <b>업체·색상·시편종류·시험항목</b>이 자동으로 읽혀집니다.
+                        </div>
+
+                        <!-- 탭 -->
+                        <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px">
+                            <button id="no-tab-text" onclick="noSwitchTab('text',this)"
+                                    style="padding:7px 16px;font-size:13px;cursor:pointer;color:var(--tx);border:none;background:none;font-family:var(--sans);border-bottom:2px solid var(--b);margin-bottom:-1px;font-weight:600">
+                                메일 텍스트
+                            </button>
+                            <button id="no-tab-image" onclick="noSwitchTab('image',this)"
+                                    style="padding:7px 16px;font-size:13px;cursor:pointer;color:var(--tx3);border:none;background:none;font-family:var(--sans);border-bottom:2px solid transparent;margin-bottom:-1px">
+                                ️ 이미지 붙여넣기
+                            </button>
+                            <button id="no-tab-xlsx" onclick="noSwitchTab('xlsx',this)"
+                                    style="padding:7px 16px;font-size:13px;cursor:pointer;color:var(--tx3);border:none;background:none;font-family:var(--sans);border-bottom:2px solid transparent;margin-bottom:-1px">
+                                엑셀 업로드
+                            </button>
+                        </div>
+
+                        <!-- 텍스트 붙여넣기 탭 -->
+                        <div id="no-tab-text-body">
+                            <textarea id="no-mail-text" rows="10" style="resize:vertical;font-size:12px;font-family:var(--mono)"
+                                      id="no-mail-textarea"
+                                      placeholder="Outlook에서 메일 본문 전체 선택(Ctrl+A) → 복사(Ctrl+C) → 여기 붙여넣기(Ctrl+V)&#10;&#10;아래 항목이 자동 추출됩니다:&#10;· 평가목적, 담당자, 업체, 색상코드, 총 EA&#10;· 시편종류별 시험항목 (①②③ 번호 패턴)"></textarea>
+                            <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                                <button class="btn sm" onclick="noLoadSample1()">샘플1 (NAC 단일)</button>
+                                <button class="btn sm" onclick="noLoadSample2()">샘플2 (KCC+NAC 내판)</button>
+                                <button class="btn sm" style="margin-left:auto;color:var(--tx3)" onclick="document.getElementById('no-mail-text').value=''">지우기</button>
+                            </div>
+                        </div>
+
+                        <!-- 이미지 붙여넣기 탭 -->
+                        <div id="no-tab-image-body" style="display:none">
+                            <div id="no-img-paste-zone"
+                                 style="border:2px dashed var(--border2);border-radius:10px;padding:32px 20px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg3);min-height:160px;position:relative"
+                                 onclick="this.focus()" tabindex="0"
+                                 onpaste="noHandleImagePaste(event)"
+                                 onkeydown=""
+                                 ondragover="event.preventDefault();this.style.borderColor='var(--b)'"
+                                 ondragleave="this.style.borderColor='var(--border2)'"
+                                 ondrop="noHandleImageDrop(event)">
+                                <div id="no-img-preview-wrap">
+
+                                    <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px">캡처 후 여기에 Ctrl+V</div>
+                                    <div style="font-size:12px;color:var(--tx3)">캡처도구로 화면 캡처 → Ctrl+C → 이 영역 클릭 후 Ctrl+V</div>
+                                    <div style="font-size:11px;color:var(--tx3);margin-top:4px">또는 이미지 파일을 드래그하세요</div>
+                                </div>
+                            </div>
+                            <div id="no-img-status" style="margin-top:8px;font-size:12px;color:var(--tx3);text-align:center"></div>
+                        </div>
+
+                        <!-- 엑셀 업로드 탭 -->
+                        <div id="no-tab-xlsx-body" style="display:none">
+                            <div id="no-xlsx-drop"
+                                 style="border:2px dashed var(--border2);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg3)"
+                                 ondragover="event.preventDefault();this.style.borderColor='var(--b)';this.style.background='var(--bbg)'"
+                                 ondragleave="this.style.borderColor='var(--border2)';this.style.background='var(--bg3)'"
+                                 ondrop="noXlsxDrop(event)"
+                                 onclick="document.getElementById('no-xlsx-input').click()">
+
+                                <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px">클릭하거나 엑셀 파일 드래그</div>
+                                <div style="font-size:12px;color:var(--tx3)">기존 시험항목 및 시료수령 엑셀 파일 (.xlsx)</div>
+                                <div style="font-size:11px;color:var(--tx3);margin-top:4px">헤더: 업체명 · 색상 · 시편종류 · 시험항목 · 실수령 개수(EA)</div>
+                                <input type="file" id="no-xlsx-input" accept=".xlsx,.xls" style="display:none" onchange="noXlsxRead(this.files[0])">
+                            </div>
+                            <div id="no-xlsx-status" style="display:none;margin-top:10px"></div>
+                        </div>
+
+                        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+                            <button class="btn" onclick="closeModal('new-order-modal')">취소</button>
+                            <button class="btn primary" onclick="noRunParse()">파싱 → 다음</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: 파싱 결과 확인 + 연도/차수 입력 -->
+                    <div id="no-step2" style="display:none">
+                        <!-- 파싱 결과 요약 -->
+                        <div id="no-parse-summary" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px"></div>
+
+                        <!-- 연도 + 차수만 입력 -->
+                        <div class="grid2" style="margin-bottom:10px">
+                            <div class="field">
+                                <label>연도</label>
+                                <select id="no-year"><option value="2025">2025</option><option value="2024" selected>2024</option><option value="2023">2023</option></select>
+                            </div>
+                            <div class="field">
+                                <label>차수 <span style="color:var(--r)">*</span></label>
+                                <input id="no-cha" placeholder="예: 1차, 60차" type="text">
+                            </div>
+                        </div>
+
+                        <!-- 파싱된 나머지 필드 (수정 가능) -->
+                        <div class="field">
+                            <label>평가목적</label>
+                            <input id="no-purpose" placeholder="예: 울산41공장 도료업체 이원화 개발관련 평가의뢰">
+                        </div>
+                        <div class="grid2" style="margin-bottom:10px">
+                            <div class="field">
+                                <label>담당자</label>
+                                <select id="no-mgr">
+                                    <option>김환오</option>
+                                    <option>채종운</option>
+                                    <option>전재철</option>
+                                    <option>양지원</option>
+                                    <option>이재진</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>의뢰일</label>
+                                <input id="no-date" type="date">
+                            </div>
+                        </div>
+                        <!-- 업체별 차종 분리 입력 UI -->
+                        <div class="field" style="margin-bottom:6px">
+                            <label id="no-maker-label">
+                                업체 <span style="font-size:11px;color:var(--tx3)">(쉼표 구분, 입력 후 Enter)</span>
+                                <span id="no-sys-badge" style="font-size:10px;margin-left:6px;padding:1px 6px;border-radius:8px;background:var(--bbg);color:var(--b)"></span>
+                            </label>
+                            <div style="display:flex;gap:6px">
+                                <input id="no-maker" placeholder="예: 현대성우캐스팅, 핸즈" style="flex:1"
+                                       oninput="noMakerInput()" onkeydown="if(event.key==='Enter'){event.preventDefault();noRebuildColorRows();}">
+                                <button class="btn sm" onclick="noRebuildColorRows()" style="white-space:nowrap">차종 분리</button>
+                            </div>
+                        </div>
+                        <!-- 업체별 차종 입력 (동적 생성) -->
+                        <div id="no-color-rows" style="margin-bottom:6px"></div>
+                        <!-- 히든: registerOrder에서 읽는 레거시 필드 (JS로만 관리) -->
+                        <input id="no-colors" type="hidden" value="">
+                        <div class="field">
+                            <label>시편 총 수량 (EA)</label>
+                            <input id="no-cnt" type="number" placeholder="예: 92" style="width:120px">
+                        </div>
+
+                        <!-- 휠도장 전용: 도막두께 포인트 수 입력 -->
+                        <div id="no-wheel-tk-wrap" style="display:none;margin-top:6px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px">
+                            <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:8px">도막두께 측정 포인트 수</div>
+                            <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">포인트당 25,000원 × 포인트 수로 계산됩니다</div>
+                            <div id="no-wheel-tk-rows" style="display:flex;flex-direction:column;gap:6px"></div>
+                            <div style="font-size:11px;color:var(--tx3);margin-top:6px">
+                                ※ 전처리(도막두께-전처리)는 종당 200,000원 고정
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:8px;justify-content:space-between;margin-top:8px">
+                            <button class="btn" onclick="noBackToStep1()">← 다시 파싱</button>
+                            <div style="display:flex;gap:8px">
+                                <button class="btn" onclick="closeModal('new-order-modal')">취소</button>
+                                <button class="btn primary" onclick="registerOrder()">✓ 등록</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ══ DGU 전용 STEP2 ══ -->
+                    <div id="no-step2-dgu" style="display:none">
+                        <!-- 파싱 결과 요약 -->
+                        <div id="no-parse-summary-dgu" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px"></div>
+
+                        <!-- 연도 + 차수 -->
+                        <div class="grid2" style="margin-bottom:10px">
+                            <div class="field">
+                                <label>연도</label>
+                                <select id="no-year-dgu"><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option></select>
+                            </div>
+                            <div class="field">
+                                <label>차수 <span style="color:var(--r)">*</span></label>
+                                <input id="no-cha-dgu" placeholder="예: 1차, DGU 3차" type="text">
+                            </div>
+                        </div>
+
+                        <!-- 평가목적 -->
+                        <div class="field">
+                            <label>평가목적</label>
+                            <input id="no-purpose-dgu" placeholder="예: 국내공장 DGU 다원화 위한 SIKA 제품 평가">
+                        </div>
+                        <div class="grid2" style="margin-bottom:10px">
+                            <div class="field">
+                                <label>담당자</label>
+                                <select id="no-mgr-dgu">
+                                    <option>김환오</option>
+                                    <option>채종운</option>
+                                    <option>전재철</option>
+                                    <option>양지원</option>
+                                    <option>이재진</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>의뢰일</label>
+                                <input id="no-date-dgu" type="date">
+                            </div>
+                        </div>
+
+                        <!-- 실러업체 -->
+                        <div class="field" style="margin-bottom:10px">
+                            <label>실러 업체 <span style="font-size:11px;color:var(--tx3)">(쉼표 구분)</span></label>
+                            <input id="no-maker-dgu" placeholder="예: SIKA, DUPONT" style="flex:1">
+                        </div>
+
+                        <!-- 피착제 계층 편집 -->
+                        <div style="margin-bottom:10px">
+                            <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:6px">
+                                피착제 구성
+                                <span style="font-size:11px;font-weight:400;color:var(--tx3);margin-left:6px">파싱 결과 — 직접 수정 가능</span>
+                            </div>
+                            <div id="no-dgu-substrate-wrap" style="display:flex;flex-direction:column;gap:4px"></div>
+                            <button class="btn sm" style="margin-top:6px" onclick="noDguAddSubstrate()">+ 피착제 추가</button>
+                        </div>
+
+                        <!-- 시험항목 -->
+                        <div class="field" style="margin-bottom:10px">
+                            <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:6px">시험항목</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px" id="no-dgu-tests">
+                                <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px">
+                                    <input type="checkbox" id="dgu-test-knifecut" checked style="accent-color:var(--g)"> KNIFE CUT
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px">
+                                    <input type="checkbox" id="dgu-test-hardness" checked style="accent-color:var(--g)"> 경도
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px">
+                                    <input type="checkbox" id="dgu-test-sealer" checked style="accent-color:var(--g)"> 실러물성 (인장/신율/인열)
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px">
+                                    <input type="checkbox" id="dgu-test-shear" style="accent-color:var(--g)"> 전단강도
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 시편 총 EA -->
+                        <div class="field">
+                            <label>시편 총 수량 (EA)</label>
+                            <input id="no-cnt-dgu" type="number" placeholder="예: 90" style="width:120px">
+                        </div>
+
+                        <div style="display:flex;gap:8px;justify-content:space-between;margin-top:8px">
+                            <button class="btn" onclick="noDguBackToStep1()">← 다시 파싱</button>
+                            <div style="display:flex;gap:8px">
+                                <button class="btn" onclick="closeModal('new-order-modal')">취소</button>
+                                <button class="btn primary" onclick="registerOrderDgu()">등록</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--bg3)">
-              <span style="font-size:11px;color:var(--tx3)">DGU</span>
-              <span style="font-family:var(--mono);font-size:11px;color:var(--tx2)" id="used-dgu">—</span>
+        </div>
+
+        <!-- ══ 항목 직접 추가 모달 ══ -->
+        <div class="overlay" id="add-item-modal">
+            <div class="modal" style="width:400px">
+                <div class="mhead"><span style="font-size:20px">+</span><span style="font-size:15px;font-weight:700">시험항목 추가</span></div>
+                <div class="mbody">
+                    <div class="field">
+                        <label>시편 구분</label>
+                        <input id="ai-section" placeholder="예: 완성도막, OVER BAKE, 내판도막">
+                    </div>
+                    <div class="field">
+                        <label>시험항목 명</label>
+                        <select id="ai-item-sel" onchange="onAiItemSel(this.value)">
+                            <option value="">-- 선택 --</option>
+                            <!-- 차체도장 항목 -->
+                            <optgroup id="ai-opt-body-1" label="[차체] 일반시편">
+                                <option value="도막두께|6700">도막두께 (6,700원)</option>
+                                <option value="광택|6700">광택 (6,700원)</option>
+                                <option value="경도|6700">경도 (6,700원)</option>
+                                <option value="내충격성|6700">내충격성 (6,700원)</option>
+                                <option value="부착성|13500">부착성 (13,500원)</option>
+                                <option value="내수성|30000">내수성 (30,000원)</option>
+                                <option value="내습성|30000">내습성 (30,000원)</option>
+                                <option value="내스크래치성|30000">내스크래치성 (30,000원)</option>
+                                <option value="내치핑성|30000">내치핑성 (30,000원)</option>
+                                <option value="내염수분무성|30000">내염수분무성 (30,000원)</option>
+                                <option value="ATR분析|30000">ATR분析 (30,000원)</option>
+                            </optgroup>
+                            <optgroup id="ai-opt-body-2" label="[차체] 특수시편">
+                                <option value="재도장성|13500">재도장성 (13,500원)</option>
+                                <option value="층간부착성|13500">층간부착성 (13,500원)</option>
+                                <option value="O/B층간부착성|13500">O/B층간부착성 (13,500원)</option>
+                            </optgroup>
+                            <!-- 휠도장 항목 -->
+                            <optgroup id="ai-opt-wheel" label="[휠] 항목">
+                                <option value="도막두께|25000">도막두께 (25,000원/포인트)</option>
+                                <option value="도막두께-전처리|200000">도막두께-전처리 (200,000원)</option>
+                                <option value="부착성|20000">부착성 (20,000원)</option>
+                                <option value="내수성|480000">내수성 (480,000원)</option>
+                                <option value="내습성|480000">내습성 (480,000원)</option>
+                                <option value="내치핑성|100000">내치핑성 (100,000원)</option>
+                                <option value="내염수분무성|750000">내염수분무성 (750,000원)</option>
+                                <option value="CASS시험|3600000">CASS시험 (3,600,000원)</option>
+                                <option value="IR분석|50000">IR분석 (50,000원)</option>
+                            </optgroup>
+                            <!-- DGU 항목 -->
+                            <optgroup id="ai-opt-dgu" label="[DGU] MS715-25">
+                                <optgroup label="  KNIFE CUT 부착성">
+                                    <option value="KNIFE CUT_상태|19000">KNIFE CUT — 상태 (19,000원)</option>
+                                    <option value="KNIFE CUT_내열|419000">KNIFE CUT — 내열 (419,000원)</option>
+                                    <option value="KNIFE CUT_내수|1019000">KNIFE CUT — 내수 (1,019,000원)</option>
+                                    <option value="KNIFE CUT_내약품|66500">KNIFE CUT — 내약품 (66,500원)</option>
+                                    <option value="KNIFE CUT_내열CYCLE|799000">KNIFE CUT — 내열CYCLE (799,000원)</option>
+                                </optgroup>
+                                <optgroup label="  전단강도">
+                                    <option value="전단강도_상태|19000">전단강도 — 상태 (19,000원)</option>
+                                    <option value="전단강도_내열|419000">전단강도 — 내열 (419,000원)</option>
+                                    <option value="전단강도_내수|1019000">전단강도 — 내수 (1,019,000원)</option>
+                                    <option value="전단강도_내약품|66500">전단강도 — 내약품 (66,500원)</option>
+                                    <option value="전단강도_내열CYCLE|799000">전단강도 — 내열CYCLE (799,000원)</option>
+                                    <option value="전단모듈러스|9500">전단모듈러스 — 상온 (9,500원)</option>
+                                </optgroup>
+                                <optgroup label="  경도 (Shore A)">
+                                    <option value="경도_상태|9500">경도 — 상태 (9,500원)</option>
+                                    <option value="경도_내열|409500">경도 — 내열 (409,500원)</option>
+                                    <option value="경도_내수|1009500">경도 — 내수 (1,009,500원)</option>
+                                </optgroup>
+                                <optgroup label="  실러물성">
+                                    <option value="인열강도|9500">인열강도 (9,500원)</option>
+                                    <option value="인장강도|23000">인장강도 (23,000원)</option>
+                                    <option value="신율|9500">신율 (9,500원)</option>
+                                </optgroup>
+                                <option value="시료제작비|190000">시료제작비 (190,000원)</option>
+                            </optgroup>
+                            <option value="__custom__|0">직접 입력</option>
+                        </select>
+                    </div>
+                    <div class="field" id="ai-custom-wrap" style="display:none">
+                        <label>직접 입력</label>
+                        <input id="ai-custom" placeholder="항목 이름">
+                    </div>
+                    <div class="field">
+                        <label>단가 (원)</label>
+                        <input id="ai-price" type="number" placeholder="예: 6700">
+                    </div>
+                </div>
+                <div class="mfoot">
+                    <button class="btn" onclick="closeModal('add-item-modal')">취소</button>
+                    <button class="btn primary" onclick="confirmAddItem()">추가</button>
+                </div>
             </div>
-          </div>
-          <!-- 합계 사용 -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:12px;color:var(--tx2)">합계 사용</span>
-            <span style="font-family:var(--mono);font-size:13px;color:var(--o)" id="used-cost">—</span>
-          </div>
-          <div style="height:1px;background:var(--border);margin:8px 0"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:12px;font-weight:700;color:var(--tx2)">잔여</span>
-            <span style="font-family:var(--mono);font-size:14px;font-weight:700" id="remain-cost">—</span>
-          </div>
-          <!-- 진행바 -->
-          <div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:10px;overflow:hidden">
-            <div id="cost-bar" style="height:100%;border-radius:2px;background:var(--o);width:0%;transition:width .5s"></div>
-          </div>
-          <div style="font-size:10px;color:var(--tx3);margin-top:3px;text-align:right" id="cost-pct">0%</div>
-        </div>
-      </div>
-
-      <!-- 오른쪽: 선택된 차수 상세 -->
-      <div id="order-detail">
-        <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
-          
-          <div>왼쪽에서 차수를 선택하거나 새로 등록하세요</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 나머지 페이지들 (placeholder) -->
-<div id="page-dashboard" class="page">
-  <div class="topbar">
-    <span class="topbar-title">대시보드</span>
-    <div class="topbar-right">
-      <select id="db-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="dbRefresh()">
-      </select>
-      <button class="btn" onclick="dbRefresh()" style="font-size:12px">↻ 새로고침</button>
-    </div>
-  </div>
-  <div style="padding:20px;overflow-y:auto;height:calc(100vh - 56px)" id="db-body">
-    <div style="text-align:center;padding:60px 20px;color:var(--tx3)">로딩 중...</div>
-  </div>
-</div>
-<div id="page-thickness" class="page">
-  <div class="topbar">
-    <span class="topbar-title">중간결과 (도막두께 · 광택 · ATR)</span>
-    <div class="topbar-right">
-      <select id="tk-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="tkChangeYear(this.value)">
-        <option value="2024">2024년</option><option value="2025">2025년</option><option value="2023">2023년</option>
-      </select>
-      <select id="tk-order-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);outline:none;min-width:160px" onchange="tkSelectOrder(this.value)">
-        <option value="">-- 차수 선택 --</option>
-      </select>
-      <button class="btn" onclick="saveAll()" style="font-size:12px">저장</button>
-      <button class="btn primary" onclick="sendNotification('middle')" style="font-size:12px"> 현대차 발송</button>
-    </div>
-  </div>
-  <div style="padding:20px" id="tk-body">
-    <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
-      
-      <div>상단에서 차수를 선택하세요</div>
-    </div>
-  </div>
-</div>
-<div id="page-results" class="page">
-  <div class="topbar">
-    <span class="topbar-title">시험 결과</span>
-    <div class="topbar-right">
-      <select id="rs-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="rsChangeYear(this.value)">
-        <option value="2024">2024년</option><option value="2025">2025년</option><option value="2023">2023년</option>
-      </select>
-      <select id="rs-order-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);outline:none;min-width:180px" onchange="rsSelectOrder(this.value)">
-        <option value="">-- 차수 선택 --</option>
-      </select>
-      <button class="btn" onclick="saveAll()" style="font-size:12px">저장</button>
-      <button class="btn primary" onclick="sendNotification('result')" style="font-size:12px"> 현대차 발송</button>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 56px);overflow:hidden" id="rs-layout">
-    <!-- 좌측: 색상 목록 -->
-    <div style="border-right:1px solid var(--border);overflow-y:auto;padding:12px 8px" id="rs-list">
-      <div style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px">차수를 선택하세요</div>
-    </div>
-    <!-- 우측: 상세 결과 -->
-    <div style="overflow-y:auto;padding:20px" id="rs-detail">
-      <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
-        
-        <div>좌측에서 색상을 선택하세요</div>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="page-notifications" class="page">
-  <div class="topbar">
-    <span class="topbar-title">NG 알림</span>
-    <div class="topbar-right">
-      <select id="ng-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="ngRefresh()">
-        <option value="all">전체 연도</option>
-        <option value="2024">2024년</option><option value="2025">2025년</option><option value="2023">2023년</option>
-      </select>
-      <button class="btn" onclick="ngMarkAllRead()" style="font-size:12px">✓ 전체 확인</button>
-      <button class="btn primary" onclick="sendNotification('ng')" style="font-size:12px"> 현대차 발송</button>
-    </div>
-  </div>
-  <div style="padding:20px" id="ng-body">
-    <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
-      
-      <div>NG 항목을 불러오는 중...</div>
-    </div>
-  </div>
-</div>
-<div id="page-report" class="page">
-  <div class="topbar">
-    <span class="topbar-title">보고서</span>
-    <div class="topbar-right">
-      <select id="rp-year-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);font-family:var(--mono);font-weight:700;outline:none" onchange="rpChangeYear(this.value)">
-        <option value="2024">2024년</option><option value="2025">2025년</option><option value="2023">2023년</option>
-      </select>
-      <select id="rp-order-sel" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--tx);outline:none;min-width:180px" onchange="rpSelectOrder(this.value)">
-        <option value="">-- 차수 선택 --</option>
-      </select>
-      <button class="btn" onclick="rpPrint()" style="font-size:12px">️ 인쇄 / PDF</button>
-    </div>
-  </div>
-  <div style="padding:20px;background:var(--bg);min-height:calc(100vh - 56px)" id="rp-body">
-    <div style="text-align:center;padding:60px 20px;color:var(--tx3)">
-      
-      <div>차수를 선택하면 보고서가 생성됩니다</div>
-    </div>
-  </div>
-</div>
-
-</main>
-</div>
-
-<!-- ══ 신규 차수 등록 모달 ══ -->
-<!-- ══ 설정 모달 ══ -->
-<div class="overlay" id="settings-modal">
-  <div class="modal" style="max-width:460px">
-    <div class="modal-header">
-      <span class="modal-title">설정</span>
-      <button class="modal-close" onclick="closeModal('settings-modal')">×</button>
-    </div>
-    <div style="padding:4px 0 12px">
-
-      <!-- API 키 섹션 -->
-      <div style="margin-bottom:18px">
-        <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-          Anthropic API 키
-          <span id="api-key-status" style="font-size:10px;font-weight:400;padding:1px 7px;border-radius:10px"></span>
-        </div>
-        <div style="font-size:11px;color:var(--tx3);margin-bottom:8px;line-height:1.6">
-          이미지 붙여넣기 파싱에 사용됩니다.<br>
-          <a href="https://console.anthropic.com/settings/keys" target="_blank"
-            style="color:var(--b);text-decoration:none">console.anthropic.com</a>에서 발급 가능합니다.
-        </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input id="settings-api-key" type="password"
-            placeholder="sk-ant-api03-..."
-            style="flex:1;padding:7px 10px;font-size:12px;font-family:var(--mono);background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--tx);outline:none"
-            onfocus="this.style.borderColor='var(--b)'" onblur="this.style.borderColor='var(--border2)'"
-            oninput="settingsUpdateKeyStatus()">
-          <button onclick="settingsToggleKeyVisible()" title="표시/숨김"
-            style="padding:6px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;cursor:pointer;font-size:13px;color:var(--tx3)">
-            
-          </button>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:8px">
-          <button class="btn primary" onclick="settingsSaveApiKey()">저장</button>
-          <button class="btn" onclick="settingsClearApiKey()" style="color:var(--r)">키 삭제</button>
-        </div>
-        <div id="settings-key-msg" style="margin-top:6px;font-size:11px"></div>
-      </div>
-
-      <div style="border-top:1px solid var(--border);margin-bottom:16px"></div>
-
-      <!-- 계약금액 섹션 -->
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:8px">연도별 계약금액</div>
-        <div id="settings-contract-list" style="display:flex;flex-direction:column;gap:6px"></div>
-        <button class="btn sm" onclick="settingsContractRefresh()" style="margin-top:8px">새로고침</button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="new-order-modal">
-  <div class="modal" style="width:560px">
-    <div class="mhead">
-      <span style="font-size:20px"></span>
-      <span style="font-size:15px;font-weight:700">신규 차수 등록</span>
-    </div>
-    <div class="mbody">
-
-      <!-- STEP 1: 메일 입력 -->
-      <div id="no-step1">
-        <div id="no-step1-info" style="font-size:12px;color:var(--tx2);margin-bottom:12px;background:var(--bg3);border-radius:6px;padding:10px 12px;border:1px solid var(--border)">
-          메일 본문을 붙여넣거나, 캡처 이미지를 붙여넣거나, 기존 시험항목 엑셀 파일을 올리면<br>
-          <b>업체·색상·시편종류·시험항목</b>이 자동으로 읽혀집니다.
         </div>
 
-        <!-- 탭 -->
-        <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px">
-          <button id="no-tab-text" onclick="noSwitchTab('text',this)"
-            style="padding:7px 16px;font-size:13px;cursor:pointer;color:var(--tx);border:none;background:none;font-family:var(--sans);border-bottom:2px solid var(--b);margin-bottom:-1px;font-weight:600">
-             메일 텍스트
-          </button>
-          <button id="no-tab-image" onclick="noSwitchTab('image',this)"
-            style="padding:7px 16px;font-size:13px;cursor:pointer;color:var(--tx3);border:none;background:none;font-family:var(--sans);border-bottom:2px solid transparent;margin-bottom:-1px">
-            ️ 이미지 붙여넣기
-          </button>
-          <button id="no-tab-xlsx" onclick="noSwitchTab('xlsx',this)"
-            style="padding:7px 16px;font-size:13px;cursor:pointer;color:var(--tx3);border:none;background:none;font-family:var(--sans);border-bottom:2px solid transparent;margin-bottom:-1px">
-            엑셀 업로드
-          </button>
+        </div>
         </div>
 
-        <!-- 텍스트 붙여넣기 탭 -->
-        <div id="no-tab-text-body">
-          <textarea id="no-mail-text" rows="10" style="resize:vertical;font-size:12px;font-family:var(--mono)"
-id="no-mail-textarea"
-            placeholder="Outlook에서 메일 본문 전체 선택(Ctrl+A) → 복사(Ctrl+C) → 여기 붙여넣기(Ctrl+V)&#10;&#10;아래 항목이 자동 추출됩니다:&#10;· 평가목적, 담당자, 업체, 색상코드, 총 EA&#10;· 시편종류별 시험항목 (①②③ 번호 패턴)"></textarea>
-          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
-            <button class="btn sm" onclick="noLoadSample1()">샘플1 (NAC 단일)</button>
-            <button class="btn sm" onclick="noLoadSample2()">샘플2 (KCC+NAC 내판)</button>
-            <button class="btn sm" style="margin-left:auto;color:var(--tx3)" onclick="document.getElementById('no-mail-text').value=''">지우기</button>
-          </div>
-        </div>
-
-        <!-- 이미지 붙여넣기 탭 -->
-        <div id="no-tab-image-body" style="display:none">
-          <div id="no-img-paste-zone"
-            style="border:2px dashed var(--border2);border-radius:10px;padding:32px 20px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg3);min-height:160px;position:relative"
-            onclick="this.focus()" tabindex="0"
-            onpaste="noHandleImagePaste(event)"
-            onkeydown=""
-            ondragover="event.preventDefault();this.style.borderColor='var(--b)'"
-            ondragleave="this.style.borderColor='var(--border2)'"
-            ondrop="noHandleImageDrop(event)">
-            <div id="no-img-preview-wrap">
-              
-              <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px">캡처 후 여기에 Ctrl+V</div>
-              <div style="font-size:12px;color:var(--tx3)">캡처도구로 화면 캡처 → Ctrl+C → 이 영역 클릭 후 Ctrl+V</div>
-              <div style="font-size:11px;color:var(--tx3);margin-top:4px">또는 이미지 파일을 드래그하세요</div>
+        <!-- ══ 시편종류 추가 모달 ══ -->
+        <div class="overlay" id="add-sec-modal">
+            <div class="modal" style="width:420px">
+                <div class="mhead"><span style="font-size:20px"></span><span style="font-size:15px;font-weight:700">시편종류 추가</span></div>
+                <div class="mbody">
+                    <div class="field">
+                        <label>시편종류명 <span style="font-size:11px;color:var(--tx3)">(자유 입력 — 차수마다 다를 수 있음)</span></label>
+                        <div id="add-sec-presets" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+                            <button class="btn sm" onclick="setNewSecName('완성도막')">완성도막</button>
+                            <button class="btn sm" onclick="setNewSecName('OVER BAKE')">OVER BAKE</button>
+                            <button class="btn sm" onclick="setNewSecName('UNDER BAKE')">UNDER BAKE</button>
+                            <button class="btn sm" onclick="setNewSecName('재도장')">재도장</button>
+                            <button class="btn sm" onclick="setNewSecName('층간부착')">층간부착</button>
+                            <button class="btn sm" onclick="setNewSecName('O/B 층간부착')">O/B 층간부착</button>
+                            <button class="btn sm" onclick="setNewSecName('내판 도막')">내판 도막</button>
+                            <button class="btn sm" onclick="setNewSecName('도어 내판')">도어 내판</button>
+                            <button class="btn sm" onclick="setNewSecName('후드 내판')">후드 내판</button>
+                            <button class="btn sm" onclick="setNewSecName('투톤도막')">투톤도막</button>
+                            <button class="btn sm" onclick="setNewSecName('전착도막')">전착도막</button>
+                            <button class="btn sm" onclick="setNewSecName('중도 단독')">중도 단독</button>
+                            <button class="btn sm" onclick="setNewSecName('중도 삭제')">중도 삭제</button>
+                            <button class="btn sm" onclick="setNewSecName('치핑프라이머')">치핑프라이머</button>
+                        </div>
+                        <input id="new-sec-name" placeholder="위에서 선택하거나 직접 입력" oninput="updateNewSecItems(this.value)">
+                    </div>
+                    <div class="field">
+                        <label>기본 항목 <span style="font-size:11px;color:var(--tx3)">(체크 해제로 제외 가능, 나중에 편집 가능)</span></label>
+                        <div id="new-sec-items" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+                    </div>
+                </div>
+                <div class="mfoot">
+                    <button class="btn" onclick="closeModal('add-sec-modal')">취소</button>
+                    <button class="btn primary" onclick="confirmAddSec()">추가</button>
+                </div>
             </div>
-          </div>
-          <div id="no-img-status" style="margin-top:8px;font-size:12px;color:var(--tx3);text-align:center"></div>
         </div>
 
-        <!-- 엑셀 업로드 탭 -->
-        <div id="no-tab-xlsx-body" style="display:none">
-          <div id="no-xlsx-drop"
-            style="border:2px dashed var(--border2);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg3)"
-            ondragover="event.preventDefault();this.style.borderColor='var(--b)';this.style.background='var(--bbg)'"
-            ondragleave="this.style.borderColor='var(--border2)';this.style.background='var(--bg3)'"
-            ondrop="noXlsxDrop(event)"
-            onclick="document.getElementById('no-xlsx-input').click()">
-            
-            <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px">클릭하거나 엑셀 파일 드래그</div>
-            <div style="font-size:12px;color:var(--tx3)">기존 시험항목 및 시료수령 엑셀 파일 (.xlsx)</div>
-            <div style="font-size:11px;color:var(--tx3);margin-top:4px">헤더: 업체명 · 색상 · 시편종류 · 시험항목 · 실수령 개수(EA)</div>
-            <input type="file" id="no-xlsx-input" accept=".xlsx,.xls" style="display:none" onchange="noXlsxRead(this.files[0])">
-          </div>
-          <div id="no-xlsx-status" style="display:none;margin-top:10px"></div>
+        <!-- ══ 메일 파싱 모달 ══ -->
+        <div class="overlay" id="mail-parse-modal">
+            <div class="modal" style="width:600px">
+                <div class="mhead"><span style="font-size:20px"></span><span style="font-size:15px;font-weight:700">의뢰 메일 파싱</span></div>
+                <div class="mbody">
+                    <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">
+                        메일 본문을 붙여넣으면 업체·색상·시편종류·시험항목·EA를 자동 추출합니다.<br>
+                        파싱 후 직접 편집할 수 있고, 놓친 항목은 수동으로 추가하면 됩니다.
+                    </div>
+                    <textarea id="mail-parse-text" rows="10" style="resize:vertical;font-size:12px;font-family:var(--mono)"
+                              placeholder="메일 본문을 여기에 붙여넣기...&#10;&#10;예) 평가 업체: KCC, NAC&#10;칼라: NRB, HT7, SMZ&#10;완성도막 10EA / OVER&amp;UNDER BAKE 5EA&#10;시험항목: 도막두께, 광택, 부착성 ..."></textarea>
+                    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+                        <button class="btn sm" onclick="loadSampleMail1()">샘플1 (NAC 단일업체)</button>
+                        <button class="btn sm" onclick="loadSampleMail2()">샘플2 (KCC+NAC 내판포함)</button>
+                        <button class="btn sm" onclick="document.getElementById('mail-parse-text').value=''">지우기</button>
+                    </div>
+                    <div id="mail-parse-preview" style="display:none;margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px">
+                        <div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px">✓ 파싱 결과 미리보기</div>
+                        <div id="mail-parse-preview-content"></div>
+                    </div>
+                </div>
+                <div class="mfoot">
+                    <button class="btn" onclick="closeModal('mail-parse-modal')">취소</button>
+                    <button class="btn" onclick="runMailParse()">파싱 실행</button>
+                    <button class="btn primary" id="mail-parse-apply-btn" style="display:none" onclick="applyMailParse()">✓ 적용</button>
+                </div>
+            </div>
         </div>
 
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
-          <button class="btn" onclick="closeModal('new-order-modal')">취소</button>
-          <button class="btn primary" onclick="noRunParse()">파싱 → 다음</button>
-        </div>
-      </div>
+        <!-- ══ 도막두께 계산기 패널 (플로팅 사이드) ══ -->
+        <button id="tk-calc-toggle" onclick="tkToggleCalcPanel()" title="도막두께 계산기">도막두께 계산기</button>
+        <div id="tk-calc-panel"></div>
 
-      <!-- STEP 2: 파싱 결과 확인 + 연도/차수 입력 -->
-      <div id="no-step2" style="display:none">
-        <!-- 파싱 결과 요약 -->
-        <div id="no-parse-summary" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px"></div>
-
-        <!-- 연도 + 차수만 입력 -->
-        <div class="grid2" style="margin-bottom:10px">
-          <div class="field">
-            <label>연도</label>
-            <select id="no-year"><option value="2025">2025</option><option value="2024" selected>2024</option><option value="2023">2023</option></select>
-          </div>
-          <div class="field">
-            <label>차수 <span style="color:var(--r)">*</span></label>
-            <input id="no-cha" placeholder="예: 1차, 60차" type="text">
-          </div>
+        <!-- ══ 발송 확인 모달 ══ -->
+        <div class="overlay" id="send-notification-modal">
+            <div class="modal" style="width:420px">
+                <div class="mhead">
+                    <span style="font-size:20px"></span>
+                    <span style="font-size:15px;font-weight:700">현대차 담당자 발송</span>
+                </div>
+                <div class="mbody" id="send-modal-body"></div>
+                <div class="mfoot">
+                    <button class="btn" onclick="closeModal('send-notification-modal')">취소</button>
+                    <button class="btn primary" id="send-modal-confirm">발송 기록</button>
+                </div>
+            </div>
         </div>
 
-        <!-- 파싱된 나머지 필드 (수정 가능) -->
-        <div class="field">
-          <label>평가목적</label>
-          <input id="no-purpose" placeholder="예: 울산41공장 도료업체 이원화 개발관련 평가의뢰">
-        </div>
-        <div class="grid2" style="margin-bottom:10px">
-          <div class="field">
-            <label>담당자</label>
-            <select id="no-mgr">
-              <option>김환오</option><option>채종운</option><option>전재철</option><option>양지원</option><option>이재진</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>의뢰일</label>
-            <input id="no-date" type="date">
-          </div>
-        </div>
-        <!-- 업체별 차종 분리 입력 UI -->
-        <div class="field" style="margin-bottom:6px">
-          <label id="no-maker-label">업체 <span style="font-size:11px;color:var(--tx3)">(쉼표 구분, 입력 후 Enter)</span>
-            <span id="no-sys-badge" style="font-size:10px;margin-left:6px;padding:1px 6px;border-radius:8px;background:var(--bbg);color:var(--b)"></span>
-          </label>
-          <div style="display:flex;gap:6px">
-            <input id="no-maker" placeholder="예: 현대성우캐스팅, 핸즈" style="flex:1"
-              oninput="noMakerInput()" onkeydown="if(event.key==='Enter'){event.preventDefault();noRebuildColorRows();}">
-            <button class="btn sm" onclick="noRebuildColorRows()" style="white-space:nowrap">차종 분리</button>
-          </div>
-        </div>
-        <!-- 업체별 차종 입력 (동적 생성) -->
-        <div id="no-color-rows" style="margin-bottom:6px"></div>
-        <!-- 히든: registerOrder에서 읽는 레거시 필드 (JS로만 관리) -->
-        <input id="no-colors" type="hidden" value="">
-        <div class="field">
-          <label>시편 총 수량 (EA)</label>
-          <input id="no-cnt" type="number" placeholder="예: 92" style="width:120px">
+        <!-- ══ ATR 파일 관리 모달 ══ -->
+        <div class="overlay" id="atr-file-modal">
+            <div class="modal" style="width:500px">
+                <div class="mhead">
+                    <span style="font-size:20px"></span>
+                    <span id="atr-modal-title" style="font-size:15px;font-weight:700">ATR 파일 관리</span>
+                </div>
+                <div class="mbody">
+                    <!-- 업로드 드롭존 -->
+                    <div style="border:2px dashed var(--border2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:14px"
+                         onclick="document.getElementById('atr-modal-input').click()"
+                         ondragover="event.preventDefault();this.style.borderColor='var(--b)'"
+                         ondragleave="this.style.borderColor='var(--border2)'"
+                         ondrop="event.preventDefault();tkAtrModalUpload(event.dataTransfer.files);this.style.borderColor='var(--border2)'">
+
+                        <div style="font-size:13px;color:var(--tx2)">클릭하거나 파일을 드래그해서 업로드</div>
+                        <div style="font-size:11px;color:var(--tx3);margin-top:3px">JPG, PNG, PDF 지원</div>
+                        <input type="file" id="atr-modal-input" multiple accept=".pdf,.png,.jpg,.jpeg,.bmp,.tif,.tiff"
+                               style="display:none" onchange="tkAtrModalUpload(this.files);this.value=''">
+                    </div>
+                    <!-- 파일 목록 -->
+                    <div id="atr-modal-files"></div>
+                </div>
+                <div class="mfoot">
+                    <button class="btn" onclick="closeModal('atr-file-modal')">닫기</button>
+                </div>
+            </div>
         </div>
 
-        <!-- 휠도장 전용: 도막두께 포인트 수 입력 -->
-        <div id="no-wheel-tk-wrap" style="display:none;margin-top:6px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px">
-          <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:8px">도막두께 측정 포인트 수</div>
-          <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">포인트당 25,000원 × 포인트 수로 계산됩니다</div>
-          <div id="no-wheel-tk-rows" style="display:flex;flex-direction:column;gap:6px"></div>
-          <div style="font-size:11px;color:var(--tx3);margin-top:6px">
-            ※ 전처리(도막두께-전처리)는 종당 200,000원 고정
-          </div>
-        </div>
-
-        <div style="display:flex;gap:8px;justify-content:space-between;margin-top:8px">
-          <button class="btn" onclick="noBackToStep1()">← 다시 파싱</button>
-          <div style="display:flex;gap:8px">
-            <button class="btn" onclick="closeModal('new-order-modal')">취소</button>
-            <button class="btn primary" onclick="registerOrder()">✓ 등록</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ DGU 전용 STEP2 ══ -->
-      <div id="no-step2-dgu" style="display:none">
-        <!-- 파싱 결과 요약 -->
-        <div id="no-parse-summary-dgu" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px"></div>
-
-        <!-- 연도 + 차수 -->
-        <div class="grid2" style="margin-bottom:10px">
-          <div class="field">
-            <label>연도</label>
-            <select id="no-year-dgu"><option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option></select>
-          </div>
-          <div class="field">
-            <label>차수 <span style="color:var(--r)">*</span></label>
-            <input id="no-cha-dgu" placeholder="예: 1차, DGU 3차" type="text">
-          </div>
-        </div>
-
-        <!-- 평가목적 -->
-        <div class="field">
-          <label>평가목적</label>
-          <input id="no-purpose-dgu" placeholder="예: 국내공장 DGU 다원화 위한 SIKA 제품 평가">
-        </div>
-        <div class="grid2" style="margin-bottom:10px">
-          <div class="field">
-            <label>담당자</label>
-            <select id="no-mgr-dgu">
-              <option>김환오</option><option>채종운</option><option>전재철</option><option>양지원</option><option>이재진</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>의뢰일</label>
-            <input id="no-date-dgu" type="date">
-          </div>
-        </div>
-
-        <!-- 실러업체 -->
-        <div class="field" style="margin-bottom:10px">
-          <label>실러 업체 <span style="font-size:11px;color:var(--tx3)">(쉼표 구분)</span></label>
-          <input id="no-maker-dgu" placeholder="예: SIKA, DUPONT" style="flex:1">
-        </div>
-
-        <!-- 피착제 계층 편집 -->
-        <div style="margin-bottom:10px">
-          <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:6px">피착제 구성
-            <span style="font-size:11px;font-weight:400;color:var(--tx3);margin-left:6px">파싱 결과 — 직접 수정 가능</span>
-          </div>
-          <div id="no-dgu-substrate-wrap" style="display:flex;flex-direction:column;gap:4px"></div>
-          <button class="btn sm" style="margin-top:6px" onclick="noDguAddSubstrate()">+ 피착제 추가</button>
-        </div>
-
-        <!-- 시험항목 -->
-        <div class="field" style="margin-bottom:10px">
-          <div style="font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:6px">시험항목</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px" id="no-dgu-tests">
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px">
-              <input type="checkbox" id="dgu-test-knifecut" checked style="accent-color:var(--g)"> KNIFE CUT
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px">
-              <input type="checkbox" id="dgu-test-hardness" checked style="accent-color:var(--g)"> 경도
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px">
-              <input type="checkbox" id="dgu-test-sealer" checked style="accent-color:var(--g)"> 실러물성 (인장/신율/인열)
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:3px 8px">
-              <input type="checkbox" id="dgu-test-shear" style="accent-color:var(--g)"> 전단강도
-            </label>
-          </div>
-        </div>
-
-        <!-- 시편 총 EA -->
-        <div class="field">
-          <label>시편 총 수량 (EA)</label>
-          <input id="no-cnt-dgu" type="number" placeholder="예: 90" style="width:120px">
-        </div>
-
-        <div style="display:flex;gap:8px;justify-content:space-between;margin-top:8px">
-          <button class="btn" onclick="noDguBackToStep1()">← 다시 파싱</button>
-          <div style="display:flex;gap:8px">
-            <button class="btn" onclick="closeModal('new-order-modal')">취소</button>
-            <button class="btn primary" onclick="registerOrderDgu()">등록</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- ══ 항목 직접 추가 모달 ══ -->
-<div class="overlay" id="add-item-modal">
-  <div class="modal" style="width:400px">
-    <div class="mhead"><span style="font-size:20px">+</span><span style="font-size:15px;font-weight:700">시험항목 추가</span></div>
-    <div class="mbody">
-      <div class="field"><label>시편 구분</label>
-        <input id="ai-section" placeholder="예: 완성도막, OVER BAKE, 내판도막"></div>
-      <div class="field"><label>시험항목 명</label>
-        <select id="ai-item-sel" onchange="onAiItemSel(this.value)">
-          <option value="">-- 선택 --</option>
-          <!-- 차체도장 항목 -->
-          <optgroup id="ai-opt-body-1" label="[차체] 일반시편">
-            <option value="도막두께|6700">도막두께 (6,700원)</option>
-            <option value="광택|6700">광택 (6,700원)</option>
-            <option value="경도|6700">경도 (6,700원)</option>
-            <option value="내충격성|6700">내충격성 (6,700원)</option>
-            <option value="부착성|13500">부착성 (13,500원)</option>
-            <option value="내수성|30000">내수성 (30,000원)</option>
-            <option value="내습성|30000">내습성 (30,000원)</option>
-            <option value="내스크래치성|30000">내스크래치성 (30,000원)</option>
-            <option value="내치핑성|30000">내치핑성 (30,000원)</option>
-            <option value="내염수분무성|30000">내염수분무성 (30,000원)</option>
-            <option value="ATR분析|30000">ATR분析 (30,000원)</option>
-          </optgroup>
-          <optgroup id="ai-opt-body-2" label="[차체] 특수시편">
-            <option value="재도장성|13500">재도장성 (13,500원)</option>
-            <option value="층간부착성|13500">층간부착성 (13,500원)</option>
-            <option value="O/B층간부착성|13500">O/B층간부착성 (13,500원)</option>
-          </optgroup>
-          <!-- 휠도장 항목 -->
-          <optgroup id="ai-opt-wheel" label="[휠] 항목">
-            <option value="도막두께|25000">도막두께 (25,000원/포인트)</option>
-            <option value="도막두께-전처리|200000">도막두께-전처리 (200,000원)</option>
-            <option value="부착성|20000">부착성 (20,000원)</option>
-            <option value="내수성|480000">내수성 (480,000원)</option>
-            <option value="내습성|480000">내습성 (480,000원)</option>
-            <option value="내치핑성|100000">내치핑성 (100,000원)</option>
-            <option value="내염수분무성|750000">내염수분무성 (750,000원)</option>
-            <option value="CASS시험|3600000">CASS시험 (3,600,000원)</option>
-            <option value="IR분석|50000">IR분석 (50,000원)</option>
-          </optgroup>
-          <!-- DGU 항목 -->
-          <optgroup id="ai-opt-dgu" label="[DGU] MS715-25">
-            <optgroup label="  KNIFE CUT 부착성">
-            <option value="KNIFE CUT_상태|19000">KNIFE CUT — 상태 (19,000원)</option>
-            <option value="KNIFE CUT_내열|419000">KNIFE CUT — 내열 (419,000원)</option>
-            <option value="KNIFE CUT_내수|1019000">KNIFE CUT — 내수 (1,019,000원)</option>
-            <option value="KNIFE CUT_내약품|66500">KNIFE CUT — 내약품 (66,500원)</option>
-            <option value="KNIFE CUT_내열CYCLE|799000">KNIFE CUT — 내열CYCLE (799,000원)</option>
-            </optgroup>
-            <optgroup label="  전단강도">
-            <option value="전단강도_상태|19000">전단강도 — 상태 (19,000원)</option>
-            <option value="전단강도_내열|419000">전단강도 — 내열 (419,000원)</option>
-            <option value="전단강도_내수|1019000">전단강도 — 내수 (1,019,000원)</option>
-            <option value="전단강도_내약품|66500">전단강도 — 내약품 (66,500원)</option>
-            <option value="전단강도_내열CYCLE|799000">전단강도 — 내열CYCLE (799,000원)</option>
-            <option value="전단모듈러스|9500">전단모듈러스 — 상온 (9,500원)</option>
-            </optgroup>
-            <optgroup label="  경도 (Shore A)">
-            <option value="경도_상태|9500">경도 — 상태 (9,500원)</option>
-            <option value="경도_내열|409500">경도 — 내열 (409,500원)</option>
-            <option value="경도_내수|1009500">경도 — 내수 (1,009,500원)</option>
-            </optgroup>
-            <optgroup label="  실러물성">
-            <option value="인열강도|9500">인열강도 (9,500원)</option>
-            <option value="인장강도|23000">인장강도 (23,000원)</option>
-            <option value="신율|9500">신율 (9,500원)</option>
-            </optgroup>
-            <option value="시료제작비|190000">시료제작비 (190,000원)</option>
-          </optgroup>
-          <option value="__custom__|0">직접 입력</option>
-        </select>
-      </div>
-      <div class="field" id="ai-custom-wrap" style="display:none">
-        <label>직접 입력</label>
-        <input id="ai-custom" placeholder="항목 이름">
-      </div>
-      <div class="field"><label>단가 (원)</label>
-        <input id="ai-price" type="number" placeholder="예: 6700"></div>
-    </div>
-    <div class="mfoot">
-      <button class="btn" onclick="closeModal('add-item-modal')">취소</button>
-      <button class="btn primary" onclick="confirmAddItem()">추가</button>
-    </div>
-  </div>
-</div>
-
-  </div>
-</div>
-
-<!-- ══ 시편종류 추가 모달 ══ -->
-<div class="overlay" id="add-sec-modal">
-  <div class="modal" style="width:420px">
-    <div class="mhead"><span style="font-size:20px"></span><span style="font-size:15px;font-weight:700">시편종류 추가</span></div>
-    <div class="mbody">
-      <div class="field">
-        <label>시편종류명 <span style="font-size:11px;color:var(--tx3)">(자유 입력 — 차수마다 다를 수 있음)</span></label>
-        <div id="add-sec-presets" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
-          <button class="btn sm" onclick="setNewSecName('완성도막')">완성도막</button>
-          <button class="btn sm" onclick="setNewSecName('OVER BAKE')">OVER BAKE</button>
-          <button class="btn sm" onclick="setNewSecName('UNDER BAKE')">UNDER BAKE</button>
-          <button class="btn sm" onclick="setNewSecName('재도장')">재도장</button>
-          <button class="btn sm" onclick="setNewSecName('층간부착')">층간부착</button>
-          <button class="btn sm" onclick="setNewSecName('O/B 층간부착')">O/B 층간부착</button>
-          <button class="btn sm" onclick="setNewSecName('내판 도막')">내판 도막</button>
-          <button class="btn sm" onclick="setNewSecName('도어 내판')">도어 내판</button>
-          <button class="btn sm" onclick="setNewSecName('후드 내판')">후드 내판</button>
-          <button class="btn sm" onclick="setNewSecName('투톤도막')">투톤도막</button>
-          <button class="btn sm" onclick="setNewSecName('전착도막')">전착도막</button>
-          <button class="btn sm" onclick="setNewSecName('중도 단독')">중도 단독</button>
-          <button class="btn sm" onclick="setNewSecName('중도 삭제')">중도 삭제</button>
-          <button class="btn sm" onclick="setNewSecName('치핑프라이머')">치핑프라이머</button>
-        </div>
-        <input id="new-sec-name" placeholder="위에서 선택하거나 직접 입력" oninput="updateNewSecItems(this.value)">
-      </div>
-      <div class="field">
-        <label>기본 항목 <span style="font-size:11px;color:var(--tx3)">(체크 해제로 제외 가능, 나중에 편집 가능)</span></label>
-        <div id="new-sec-items" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
-      </div>
-    </div>
-    <div class="mfoot">
-      <button class="btn" onclick="closeModal('add-sec-modal')">취소</button>
-      <button class="btn primary" onclick="confirmAddSec()">추가</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ 메일 파싱 모달 ══ -->
-<div class="overlay" id="mail-parse-modal">
-  <div class="modal" style="width:600px">
-    <div class="mhead"><span style="font-size:20px"></span><span style="font-size:15px;font-weight:700">의뢰 메일 파싱</span></div>
-    <div class="mbody">
-      <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">
-        메일 본문을 붙여넣으면 업체·색상·시편종류·시험항목·EA를 자동 추출합니다.<br>
-        파싱 후 직접 편집할 수 있고, 놓친 항목은 수동으로 추가하면 됩니다.
-      </div>
-      <textarea id="mail-parse-text" rows="10" style="resize:vertical;font-size:12px;font-family:var(--mono)"
-        placeholder="메일 본문을 여기에 붙여넣기...&#10;&#10;예) 평가 업체: KCC, NAC&#10;칼라: NRB, HT7, SMZ&#10;완성도막 10EA / OVER&amp;UNDER BAKE 5EA&#10;시험항목: 도막두께, 광택, 부착성 ..."></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button class="btn sm" onclick="loadSampleMail1()">샘플1 (NAC 단일업체)</button>
-        <button class="btn sm" onclick="loadSampleMail2()">샘플2 (KCC+NAC 내판포함)</button>
-        <button class="btn sm" onclick="document.getElementById('mail-parse-text').value=''">지우기</button>
-      </div>
-      <div id="mail-parse-preview" style="display:none;margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px">
-        <div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:8px">✓ 파싱 결과 미리보기</div>
-        <div id="mail-parse-preview-content"></div>
-      </div>
-    </div>
-    <div class="mfoot">
-      <button class="btn" onclick="closeModal('mail-parse-modal')">취소</button>
-      <button class="btn" onclick="runMailParse()">파싱 실행</button>
-      <button class="btn primary" id="mail-parse-apply-btn" style="display:none" onclick="applyMailParse()">✓ 적용</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ 도막두께 계산기 패널 (플로팅 사이드) ══ -->
-<button id="tk-calc-toggle" onclick="tkToggleCalcPanel()" title="도막두께 계산기">도막두께 계산기</button>
-<div id="tk-calc-panel"></div>
-
-<!-- ══ 발송 확인 모달 ══ -->
-<div class="overlay" id="send-notification-modal">
-  <div class="modal" style="width:420px">
-    <div class="mhead">
-      <span style="font-size:20px"></span>
-      <span style="font-size:15px;font-weight:700">현대차 담당자 발송</span>
-    </div>
-    <div class="mbody" id="send-modal-body"></div>
-    <div class="mfoot">
-      <button class="btn" onclick="closeModal('send-notification-modal')">취소</button>
-      <button class="btn primary" id="send-modal-confirm">발송 기록</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ ATR 파일 관리 모달 ══ -->
-<div class="overlay" id="atr-file-modal">
-  <div class="modal" style="width:500px">
-    <div class="mhead">
-      <span style="font-size:20px"></span>
-      <span id="atr-modal-title" style="font-size:15px;font-weight:700">ATR 파일 관리</span>
-    </div>
-    <div class="mbody">
-      <!-- 업로드 드롭존 -->
-      <div style="border:2px dashed var(--border2);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:14px"
-        onclick="document.getElementById('atr-modal-input').click()"
-        ondragover="event.preventDefault();this.style.borderColor='var(--b)'"
-        ondragleave="this.style.borderColor='var(--border2)'"
-        ondrop="event.preventDefault();tkAtrModalUpload(event.dataTransfer.files);this.style.borderColor='var(--border2)'">
-        
-        <div style="font-size:13px;color:var(--tx2)">클릭하거나 파일을 드래그해서 업로드</div>
-        <div style="font-size:11px;color:var(--tx3);margin-top:3px">JPG, PNG, PDF 지원</div>
-        <input type="file" id="atr-modal-input" multiple accept=".pdf,.png,.jpg,.jpeg,.bmp,.tif,.tiff"
-          style="display:none" onchange="tkAtrModalUpload(this.files);this.value=''">
-      </div>
-      <!-- 파일 목록 -->
-      <div id="atr-modal-files"></div>
-    </div>
-    <div class="mfoot">
-      <button class="btn" onclick="closeModal('atr-file-modal')">닫기</button>
-    </div>
-  </div>
-</div>
-
-<script>
+        <script>
 
 <!-- ══ JS 모듈 로딩 ══ -->
-<script src="js/common.js"></script>
-<script src="js/body.js"></script>
-<script src="js/wheel.js"></script>
-<script src="js/dgu.js"></script>
-<script src="js/thickness.js"></script>
-<script src="js/results.js"></script>
-<script src="js/ng.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/report.js"></script>
-</body>
+                    <script src="js/supabase-client.js"></script>
+        <script src="js/auth.js"></script>
+        <script src="js/common.js"></script>
+        <script src="js/body.js"></script>
+        <script src="js/wheel.js"></script>
+        <script src="js/dgu.js"></script>
+        <script src="js/thickness.js"></script>
+        <script src="js/results.js"></script>
+        <script src="js/ng.js"></script>
+        <script src="js/dashboard.js"></script>
+        <script src="js/report.js"></script>
+    </body>
 </html>
