@@ -1,5 +1,5 @@
 // ============================================================
-// auth.js — 로그인/회원가입/세션/로그아웃
+// auth.js v2 — 아이디 기반 로그인/회원가입
 // ============================================================
 
 let AUTH_MODE = 'login';  // 'login' | 'signup'
@@ -43,6 +43,7 @@ function authInjectLoginUI() {
       .auth-tab.active { color: var(--g, #1a7f37); border-bottom-color: var(--g, #1a7f37); font-weight: 600; }
       .auth-field { margin-bottom: 12px; }
       .auth-field label { font-size: 12px; color: var(--tx2, #5a6070); display: block; margin-bottom: 4px; }
+      .auth-field label .hint { color: var(--tx3, #9aa0ad); font-weight: 400; margin-left: 4px; }
       .auth-field input, .auth-field select {
         width: 100%; background: var(--bg3, #f7f8fa); border: 1px solid var(--border, #dde1e7);
         border-radius: 6px; padding: 8px 12px; font-size: 13px; color: var(--tx, #1a1d23);
@@ -71,6 +72,10 @@ function authInjectLoginUI() {
         <button class="auth-tab" data-mode="signup" onclick="authSwitchMode('signup')">회원가입</button>
       </div>
 
+      <div class="auth-field">
+        <label>아이디</label>
+        <input id="auth-username" type="text" placeholder="영문/숫자 3~20자" autocomplete="username" autocapitalize="none">
+      </div>
       <div class="auth-field" id="auth-name-field" style="display:none">
         <label>이름</label>
         <input id="auth-name" type="text" placeholder="홍길동">
@@ -82,8 +87,8 @@ function authInjectLoginUI() {
           <option value="fiti_tester">FITI 시험자</option>
         </select>
       </div>
-      <div class="auth-field">
-        <label>이메일</label>
+      <div class="auth-field" id="auth-email-field" style="display:none">
+        <label>이메일 <span class="hint">(연락처용)</span></label>
         <input id="auth-email" type="email" placeholder="user@example.com" autocomplete="email">
       </div>
       <div class="auth-field">
@@ -110,8 +115,9 @@ function authSwitchMode(mode) {
   document.querySelectorAll('.auth-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.mode === mode);
   });
-  document.getElementById('auth-name-field').style.display = mode === 'signup' ? 'block' : 'none';
-  document.getElementById('auth-role-field').style.display = mode === 'signup' ? 'block' : 'none';
+  document.getElementById('auth-name-field').style.display  = mode === 'signup' ? 'block' : 'none';
+  document.getElementById('auth-role-field').style.display  = mode === 'signup' ? 'block' : 'none';
+  document.getElementById('auth-email-field').style.display = mode === 'signup' ? 'block' : 'none';
   document.getElementById('auth-submit').textContent = mode === 'signup' ? '회원가입' : '로그인';
   authMsg('');
 }
@@ -129,9 +135,14 @@ function authMsg(text, type = 'err') {
 // 3. 제출 처리 (로그인 / 회원가입)
 // ─────────────────────────────────────────────────────────
 async function authSubmit() {
-  const email = document.getElementById('auth-email').value.trim();
+  const username = document.getElementById('auth-username').value.trim().toLowerCase();
   const pw = document.getElementById('auth-password').value;
-  if (!email || !pw) { authMsg('이메일과 비밀번호를 입력하세요'); return; }
+
+  if (!username || !pw) { authMsg('아이디와 비밀번호를 입력하세요'); return; }
+  if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+    authMsg('아이디는 영문/숫자/언더스코어 3~20자만 가능합니다');
+    return;
+  }
   if (pw.length < 6) { authMsg('비밀번호는 6자 이상이어야 합니다'); return; }
 
   const btn = document.getElementById('auth-submit');
@@ -140,29 +151,66 @@ async function authSubmit() {
 
   try {
     if (AUTH_MODE === 'login') {
-      const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-      if (error) throw error;
+      // 아이디 → 이메일 조회
+      const { data: email, error: lookupErr } = await sb
+        .rpc('get_email_by_username', { p_username: username });
+
+      if (lookupErr) throw lookupErr;
+      if (!email) {
+        authMsg('아이디 또는 비밀번호가 올바르지 않습니다');
+        return;
+      }
+
+      // 이메일로 실제 로그인
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: email,
+        password: pw
+      });
+      if (error) {
+        // 보안상 비밀번호 틀린 거랑 아이디 없는 거 같은 메시지
+        if (error.message.includes('Invalid login')) {
+          authMsg('아이디 또는 비밀번호가 올바르지 않습니다');
+        } else {
+          throw error;
+        }
+        return;
+      }
       await authOnSignedIn(data.user);
+
     } else {
-      const name = document.getElementById('auth-name').value.trim();
-      const role = document.getElementById('auth-role').value;
-      if (!name) { authMsg('이름을 입력하세요'); return; }
+      // 회원가입
+      const name  = document.getElementById('auth-name').value.trim();
+      const role  = document.getElementById('auth-role').value;
+      const email = document.getElementById('auth-email').value.trim();
+
+      if (!name)  { authMsg('이름을 입력하세요'); return; }
+      if (!email) { authMsg('이메일을 입력하세요'); return; }
+
+      // 아이디 중복 체크
+      const { data: existingEmail } = await sb
+        .rpc('get_email_by_username', { p_username: username });
+      if (existingEmail) {
+        authMsg('이미 사용 중인 아이디입니다');
+        return;
+      }
+
       const { data, error } = await sb.auth.signUp({
         email, password: pw,
-        options: { data: { name, role } }
+        options: { data: { name, role, username } }
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('already')) {
+          authMsg('이미 가입된 이메일입니다');
+        } else {
+          throw error;
+        }
+        return;
+      }
       authMsg('가입 완료! 관리자 승인 후 사용 가능합니다.', 'ok');
       setTimeout(() => { authSwitchMode('login'); }, 2500);
     }
   } catch (e) {
-    const msg = e.message || '오류가 발생했습니다';
-    // Supabase 한국어화
-    const ko = msg.includes('Invalid login') ? '이메일 또는 비밀번호가 올바르지 않습니다'
-             : msg.includes('User already')  ? '이미 가입된 이메일입니다'
-             : msg.includes('rate limit')    ? '너무 자주 시도했어요. 잠시 후 다시 시도해주세요'
-             : msg;
-    authMsg(ko);
+    authMsg(e.message || '오류가 발생했습니다');
   } finally {
     btn.disabled = false;
     btn.textContent = AUTH_MODE === 'signup' ? '회원가입' : '로그인';
@@ -175,7 +223,6 @@ async function authSubmit() {
 async function authOnSignedIn(user) {
   window.CURRENT_USER = user;
 
-  // 프로필 로드
   const { data: profile, error } = await sb
     .from('profiles')
     .select('*')
@@ -190,7 +237,6 @@ async function authOnSignedIn(user) {
 
   window.CURRENT_PROFILE = profile;
 
-  // 승인 상태 체크
   if (profile.status === 'pending') {
     authMsg('관리자 승인 대기 중입니다. 잠시만 기다려주세요.', 'info');
     await sb.auth.signOut();
@@ -202,7 +248,6 @@ async function authOnSignedIn(user) {
     return;
   }
 
-  // ✅ 승인됨 → 오버레이 제거하고 앱 진입
   authHideOverlay();
   authShowUserBadge();
   applyRoleBasedUI();
@@ -214,7 +259,7 @@ function authHideOverlay() {
 }
 
 // ─────────────────────────────────────────────────────────
-// 5. 사이드바 푸터에 로그인 정보 표시
+// 5. 사이드바 푸터에 로그인 정보 표시 (아이디 포함)
 // ─────────────────────────────────────────────────────────
 function authShowUserBadge() {
   const footer = document.querySelector('.sidebar-footer');
@@ -232,13 +277,13 @@ function authShowUserBadge() {
     hmc_user:    'var(--b)'
   }[p.role] || 'var(--tx3)';
 
-  const initial = (p.name || p.email || '?')[0].toUpperCase();
+  const initial = (p.name || p.username || p.email || '?')[0].toUpperCase();
 
   footer.innerHTML = `
     <div class="ava" style="background:${roleColor}1a;color:${roleColor}">${initial}</div>
     <div style="flex:1;min-width:0">
-      <div style="font-size:12px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name || p.email}</div>
-      <div style="font-size:10px;color:${roleColor};font-weight:600">${roleLabel}</div>
+      <div style="font-size:12px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name || p.username}</div>
+      <div style="font-size:10px;color:${roleColor};font-weight:600">${roleLabel} · ${p.username || ''}</div>
     </div>
     <button onclick="authLogout()" title="로그아웃"
       style="background:none;border:none;cursor:pointer;color:var(--tx3);padding:6px;border-radius:4px;display:flex"
@@ -252,20 +297,12 @@ function authShowUserBadge() {
 }
 
 // ─────────────────────────────────────────────────────────
-// 6. 권한별 UI 조정 (현대차 담당자에게 일부 메뉴 숨김)
+// 6. 권한별 UI 조정 (추후 단계에서 확장)
 // ─────────────────────────────────────────────────────────
 function applyRoleBasedUI() {
   if (!window.CURRENT_PROFILE) return;
-
-  // 현대차 담당자에게는 시험결과/NG 입력 메뉴 숨김 → 추후 단계에서
-  // 일단 1단계에서는 표시만 하고 실제 차단은 2단계에서
-  if (window.isHmc?.()) {
-    // 향후: 시험결과/NG 알림 메뉴 readonly 처리
-    console.log('[auth] HMC 사용자 — 조회 모드');
-  }
-  if (window.isFitiAdmin?.()) {
-    console.log('[auth] FITI 관리자 — 전체 권한');
-  }
+  if (window.isHmc?.())       console.log('[auth] HMC 사용자');
+  if (window.isFitiAdmin?.()) console.log('[auth] FITI 관리자');
 }
 
 // ─────────────────────────────────────────────────────────
@@ -281,17 +318,14 @@ async function authLogout() {
 // 8. 페이지 로드 시 자동 실행
 // ─────────────────────────────────────────────────────────
 async function authInit() {
-  // 즉시 오버레이 표시 (앱은 뒤에서 계속 init)
   authInjectLoginUI();
 
-  // 세션 체크 (이미 로그인되어 있으면 자동 진입)
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) {
     await authOnSignedIn(session.user);
   }
 }
 
-// 가장 먼저 실행
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', authInit);
 } else {
