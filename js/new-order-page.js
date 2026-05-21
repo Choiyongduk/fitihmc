@@ -1,14 +1,43 @@
 // ============================================================
-// new-order-page.js v2 — 신규 차수 등록 페이지화 + UI 개선
+// new-order-page.js v4 — 신규 차수 등록 페이지 + 시편/항목 선택
 // ============================================================
-// 변경:
-//  - 연도 2026 추가 + 기본 선택
-//  - 업체·색상 입력 UI 개선: 업체별 한 행씩 직접 입력 (× 삭제)
-//  - "+ 업체 추가" 버튼
-//  - 레거시 호환: registerOrder()는 그대로 사용 (hidden 필드로 동기화)
+// v4 변경:
+//  - 시편 종류별 시험 항목 아코디언 UI (▶ 클릭으로 펼침/접기)
+//  - 등록 시 선택된 시편 종류 + 시험 항목 적용
+//  - DEFAULT_ITEMS는 common.js 원본 그대로 사용 (수정 없음)
 // ============================================================
 
 (function () {
+
+  // ─────────────────────────────────────────────────────
+  // DEFAULT_ITEMS 보정 — 중도도막만 추가 (나머지는 common.js 원본 유지)
+  // ─────────────────────────────────────────────────────
+  function patchDefaultItems() {
+    if (typeof DEFAULT_ITEMS === 'undefined') return;
+    // 중도도막: 도막두께, 경도, 내충격성, 부착성, 내수성, 내습성
+    if (!DEFAULT_ITEMS['중도도막']) {
+      DEFAULT_ITEMS['중도도막'] = ['도막두께', '경도', '내충격성', '부착성', '내수성', '내습성'];
+    }
+  }
+
+  // 디폴트 체크 시편 종류
+  const DEFAULT_CHECKED_SECTIONS = [
+    '완성도막', 'OVER BAKE', 'UNDER BAKE',
+    '재도장', '층간부착', 'O/B층간부착'
+  ];
+
+  // UI에 표시할 시편 종류 목록 (common.js의 DEFAULT_ITEMS 기준)
+  const SECTION_OPTIONS = [
+    { value: '완성도막',     label: '완성도막' },
+    { value: 'OVER BAKE',    label: 'OVER BAKE (O/B)' },
+    { value: 'UNDER BAKE',   label: 'UNDER BAKE (U/B)' },
+    { value: '재도장',       label: '재도장' },
+    { value: '층간부착',     label: '층간부착' },
+    { value: 'O/B층간부착',  label: 'O/B층간부착' },
+    { value: '중도도막',     label: '중도도막' },
+    { value: '내판도막',     label: '내판도막' },
+    { value: '중도 삭제',    label: '중도 삭제 도막' },
+  ];
 
   // ─────────────────────────────────────────────────────
   // 1. 모달의 STEP2 폼을 페이지로 이동
@@ -20,19 +49,15 @@
       console.warn('[new-order-page] 페이지 또는 STEP2 못 찾음');
       return;
     }
-
     step2.style.display = 'block';
     pageBody.appendChild(step2);
 
-    // STEP1 (메일 파싱) 제거
     const step1 = document.getElementById('no-step1');
     if (step1) step1.remove();
 
-    // "← 다시 파싱" 버튼 제거
     const backBtn = step2.querySelector('button[onclick*="noBackToStep1"]');
     if (backBtn) backBtn.remove();
 
-    // 푸터 정렬 정리
     const footerDiv = step2.querySelector('div[style*="justify-content:space-between"]');
     if (footerDiv) {
       footerDiv.style.justifyContent = 'flex-end';
@@ -43,38 +68,73 @@
       }
     }
 
-    // 취소 버튼 → 페이지 복귀
     const cancelBtns = step2.querySelectorAll('button[onclick*="closeModal"][onclick*="new-order-modal"]');
     cancelBtns.forEach(b => b.setAttribute('onclick', 'goBackFromNewOrder()'));
   }
 
   // ─────────────────────────────────────────────────────
-  // 2. 폼 커스터마이즈: 2026 연도 + 업체·색상 UI 교체
+  // 2. 폼 커스터마이즈
   // ─────────────────────────────────────────────────────
   function customizeForm() {
     const step2 = document.getElementById('no-step2');
     if (!step2) return;
 
-    // (1) 연도 드롭다운에 2026 추가 (없으면)
-    const yearSel = step2.querySelector('#no-year');
-    if (yearSel && !yearSel.querySelector('option[value="2026"]')) {
-      const opt2026 = document.createElement('option');
-      opt2026.value = '2026';
-      opt2026.textContent = '2026';
-      yearSel.insertBefore(opt2026, yearSel.firstChild);
-      yearSel.value = '2026';
-    }
+    hideParseSummary(step2);
+    addYear2026(step2);
+    rearrangeAndAddDueDate(step2);
+    replaceMakerUI(step2);
+    addSectionTypeSelector(step2);
+  }
 
-    // (2) 업체·색상 입력 UI 교체
-    //     기존: 쉼표 입력 + "차종 분리" 버튼 + 동적 행
-    //     변경: 처음부터 업체별 행으로 직접 입력
+  function hideParseSummary(step2) {
+    const ps = step2.querySelector('#no-parse-summary');
+    if (ps) ps.style.display = 'none';
+  }
+
+  function addYear2026(step2) {
+    const yearSel = step2.querySelector('#no-year');
+    if (!yearSel || yearSel.querySelector('option[value="2026"]')) return;
+    const opt = document.createElement('option');
+    opt.value = '2026';
+    opt.textContent = '2026';
+    yearSel.insertBefore(opt, yearSel.firstChild);
+    yearSel.value = '2026';
+  }
+
+  function rearrangeAndAddDueDate(step2) {
+    if (step2.querySelector('#no-due-date')) return;
+
+    const dateInput = step2.querySelector('#no-date');
+    const mgrInput = step2.querySelector('#no-mgr');
+    if (!dateInput) return;
+
+    const dateField = dateInput.closest('.field');
+    const mgrField = mgrInput?.closest('.field');
+    const grid = dateField?.closest('.grid2');
+
+    const dueField = document.createElement('div');
+    dueField.className = 'field';
+    dueField.innerHTML = `
+      <label>평가 요청 일정 <span style="font-size:11px;color:var(--tx3);font-weight:400">(완료예정일)</span></label>
+      <input id="no-due-date" type="date">
+    `;
+
+    if (grid && mgrField && mgrField.parentElement === grid) {
+      grid.insertAdjacentElement('beforebegin', mgrField);
+      mgrField.style.marginBottom = '10px';
+      grid.appendChild(dueField);
+    } else {
+      (dateField || dateInput.parentElement).insertAdjacentElement('afterend', dueField);
+    }
+  }
+
+  function replaceMakerUI(step2) {
     const oldMakerInput = step2.querySelector('#no-maker');
-    if (!oldMakerInput || oldMakerInput.type === 'hidden') return; // 이미 변환됨
+    if (!oldMakerInput || oldMakerInput.type === 'hidden') return;
 
     const oldField = oldMakerInput.closest('.field');
     if (!oldField) return;
 
-    // 새 필드 생성
     const newField = document.createElement('div');
     newField.className = 'field';
     newField.style.marginBottom = '10px';
@@ -85,13 +145,11 @@
     `;
     oldField.replaceWith(newField);
 
-    // 레거시 호환 hidden 필드 (registerOrder가 읽음)
     const hMaker = document.createElement('input');
     hMaker.id = 'no-maker';
     hMaker.type = 'hidden';
     newField.appendChild(hMaker);
 
-    // 기존 #no-color-rows 이동 또는 생성 (registerOrder가 querySelector로 읽음)
     let oldColorRows = step2.querySelector('#no-color-rows');
     if (oldColorRows) {
       oldColorRows.style.display = 'none';
@@ -104,8 +162,68 @@
     }
   }
 
+  function addSectionTypeSelector(step2) {
+    if (step2.querySelector('#np-sec-list')) return;
+
+    const cntInput = step2.querySelector('#no-cnt');
+    if (!cntInput) return;
+    const cntField = cntInput.closest('.field');
+    if (!cntField) return;
+
+    const rowsHtml = SECTION_OPTIONS.map(opt => {
+      const items = (typeof DEFAULT_ITEMS !== 'undefined' && DEFAULT_ITEMS[opt.value]) || [];
+      const checked = DEFAULT_CHECKED_SECTIONS.includes(opt.value);
+      const itemCount = items.length;
+
+      const itemChips = items.map(item => `
+        <label class="np-item-chip" style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--tx);padding:3px 8px;background:var(--bg);border:1px solid var(--border);border-radius:12px;user-select:none">
+          <input type="checkbox" class="np-item-chk" data-sec="${escapeAttr(opt.value)}" value="${escapeAttr(item)}" checked style="margin:0;width:11px;height:11px;cursor:pointer">
+          ${escapeHtml(item)}
+        </label>
+      `).join('');
+
+      return `
+        <div class="np-sec-row" data-sec="${escapeAttr(opt.value)}" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:4px;overflow:hidden">
+          <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;font-size:13px">
+            <input type="checkbox" class="np-sec-chk" value="${escapeAttr(opt.value)}" ${checked ? 'checked' : ''} style="margin:0">
+            <span style="font-weight:600;flex:1">${escapeHtml(opt.label)}</span>
+            <span style="font-size:11px;color:var(--tx3);font-family:var(--mono)">${itemCount > 0 ? itemCount + '개' : '항목 없음'}</span>
+            ${itemCount > 0 ? `<button type="button" class="np-sec-toggle" onclick="npToggleItems(this)" 
+              style="background:none;border:none;color:var(--tx3);cursor:pointer;padding:0 4px;font-size:11px;line-height:1">▶</button>` : ''}
+          </label>
+          ${itemCount > 0 ? `<div class="np-sec-items" style="display:none;flex-wrap:wrap;gap:4px;padding:4px 10px 10px 30px">${itemChips}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    const newField = document.createElement('div');
+    newField.className = 'field';
+    newField.style.marginBottom = '10px';
+    newField.innerHTML = `
+      <label>시편 종류 <span style="font-size:11px;color:var(--tx3);font-weight:400">(체크한 종류로 시편 생성 · ▶ 클릭으로 시험 항목 편집)</span></label>
+      <div id="np-sec-list" style="background:var(--bg3);padding:8px;border-radius:8px;border:1px solid var(--border)">
+        ${rowsHtml}
+      </div>
+      <input id="np-sec-custom" placeholder="기타 시편종류 추가 (쉼표 구분, 선택사항)" style="width:100%;margin-top:8px">
+    `;
+
+    cntField.insertAdjacentElement('beforebegin', newField);
+  }
+
   // ─────────────────────────────────────────────────────
-  // 3. 업체 행 추가 (전역)
+  // 3. 아코디언 토글
+  // ─────────────────────────────────────────────────────
+  window.npToggleItems = function (btn) {
+    const row = btn.closest('.np-sec-row');
+    const items = row?.querySelector('.np-sec-items');
+    if (!items) return;
+    const isOpen = items.style.display !== 'none';
+    items.style.display = isOpen ? 'none' : 'flex';
+    btn.textContent = isOpen ? '▶' : '▼';
+  };
+
+  // ─────────────────────────────────────────────────────
+  // 4. 업체 행 추가/동기화
   // ─────────────────────────────────────────────────────
   window.npAddMakerRow = function (maker = '', colors = '') {
     const list = document.getElementById('np-maker-list');
@@ -115,9 +233,9 @@
     row.className = 'np-maker-row';
     row.style.cssText = 'display:flex;gap:6px;align-items:center';
     row.innerHTML = `
-      <input class="np-maker-name" placeholder="업체" value="${escapeHtml(maker)}" 
+      <input class="np-maker-name" placeholder="업체" value="${escapeAttr(maker)}" 
              style="width:120px;flex-shrink:0" oninput="npSync()">
-      <input class="np-maker-colors" placeholder="색상 (쉼표 구분, 예: YAC, R2T, R8N, CRP)" value="${escapeHtml(colors)}" 
+      <input class="np-maker-colors" placeholder="색상 (쉼표 구분, 예: YAC, R2T, R8N, CRP)" value="${escapeAttr(colors)}" 
              style="flex:1;min-width:0" oninput="npSync()">
       <button type="button" onclick="this.closest('.np-maker-row').remove();npSync()" 
               style="background:none;border:none;color:var(--tx3);font-size:20px;cursor:pointer;padding:4px 10px;line-height:1;flex-shrink:0"
@@ -128,11 +246,6 @@
     setTimeout(() => row.querySelector('.np-maker-name')?.focus(), 50);
   };
 
-  // ─────────────────────────────────────────────────────
-  // 4. 새 UI → 레거시 hidden 필드 동기화
-  //    registerOrder()는 #no-maker, [data-maker-row]에서 값을 읽으므로
-  //    여기에 맞춰 hidden 영역을 채워줘야 함
-  // ─────────────────────────────────────────────────────
   window.npSync = function () {
     const rows = document.querySelectorAll('.np-maker-row');
     const makers = [];
@@ -159,7 +272,6 @@
     if (hMaker) hMaker.value = makers.join(', ');
   };
 
-  // HTML 이스케이프 (입력값을 value 속성에 안전하게 넣기 위함)
   function escapeHtml(s) {
     return String(s)
       .replace(/&/g, '&amp;')
@@ -168,16 +280,18 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
   }
+  function escapeAttr(s) {
+    return escapeHtml(s);
+  }
 
   // ─────────────────────────────────────────────────────
-  // 5. 페이지로 이동
+  // 5. 페이지로 이동 / 복귀
   // ─────────────────────────────────────────────────────
   window.goToNewOrderPage = function () {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('page-new-order').classList.add('active');
 
-    // 폼 초기화
     const today = new Date().toISOString().slice(0, 10);
     const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
     setVal('no-cha', '');
@@ -190,7 +304,6 @@
       dueEl.value = dt.toISOString().slice(0, 10);
     }
 
-    // 연도: 현재 보고있는 연도(CY) 우선, 없으면 2026
     const yearSel = document.getElementById('no-year');
     if (yearSel) {
       const target = window.CY || '2026';
@@ -198,13 +311,22 @@
       else yearSel.value = '2026';
     }
 
-    // 업체·색상 UI 초기화 (빈 행 1개로 시작)
+    // 시편 종류 체크박스 + 항목 체크박스 초기화
+    document.querySelectorAll('.np-sec-chk').forEach(c => {
+      c.checked = DEFAULT_CHECKED_SECTIONS.includes(c.value);
+    });
+    document.querySelectorAll('.np-item-chk').forEach(c => { c.checked = true; });
+    document.querySelectorAll('.np-sec-items').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.np-sec-toggle').forEach(b => b.textContent = '▶');
+    const customSec = document.getElementById('np-sec-custom');
+    if (customSec) customSec.value = '';
+
+    // 업체·색상 UI 초기화
     const npList = document.getElementById('np-maker-list');
     if (npList) {
       npList.innerHTML = '';
       window.npAddMakerRow();
     }
-    // 레거시 hidden 비우기
     setVal('no-maker', '');
     setVal('no-colors', '');
 
@@ -217,19 +339,14 @@
     const ttRows = document.getElementById('no-twotone-rows');
     if (ttRows) ttRows.innerHTML = '';
 
-    // 시스템 칩
     const chip = document.getElementById('no-sys-chip');
     if (chip) {
       chip.textContent = ({ dgu: 'DGU', wheel: '휠도장', body: '차체도장' })[window.CUR_SYS] || '차체도장';
     }
 
-    // 차수 필드에 포커스
     setTimeout(() => document.getElementById('no-cha')?.focus(), 100);
   };
 
-  // ─────────────────────────────────────────────────────
-  // 6. 의뢰 관리로 복귀
-  // ─────────────────────────────────────────────────────
   window.goBackFromNewOrder = function () {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -240,8 +357,7 @@
   };
 
   // ─────────────────────────────────────────────────────
-  // 7. openNewOrderModal 오버라이드
-  //    차체 → 페이지 / 휠 → 휠 모달 / DGU → DGU 모달
+  // 6. 함수 오버라이드
   // ─────────────────────────────────────────────────────
   let _origOpen = null;
   function installOpenOverride() {
@@ -262,9 +378,69 @@
     return true;
   }
 
-  // ─────────────────────────────────────────────────────
-  // 8. closeModal 오버라이드 — 등록 후 페이지에서 자동 복귀
-  // ─────────────────────────────────────────────────────
+  let _origRegister = null;
+  function installRegisterOverride() {
+    if (_origRegister || typeof window.registerOrder !== 'function') return false;
+    _origRegister = window.registerOrder;
+    window.registerOrder = function () {
+      const onPage = document.getElementById('page-new-order')?.classList.contains('active');
+      if (!onPage) return _origRegister();
+
+      // 사용자 선택 수집
+      const selectedSections = [];
+      const sectionItems = {};
+
+      document.querySelectorAll('.np-sec-row').forEach(row => {
+        const chk = row.querySelector('.np-sec-chk');
+        if (!chk?.checked) return;
+        const sec = chk.value;
+        selectedSections.push(sec);
+        const items = [...row.querySelectorAll('.np-item-chk:checked')].map(c => c.value);
+        sectionItems[sec] = items;
+      });
+
+      // 기타 시편종류 (DEFAULT_ITEMS에 있으면 그 항목들, 없으면 빈 섹션)
+      const customStr = document.getElementById('np-sec-custom')?.value?.trim();
+      if (customStr) {
+        const customs = customStr.split(/[,，]+/).map(s => s.trim()).filter(Boolean);
+        customs.forEach(name => {
+          selectedSections.push(name);
+          sectionItems[name] = (typeof DEFAULT_ITEMS !== 'undefined' && DEFAULT_ITEMS[name])
+            ? [...DEFAULT_ITEMS[name]]
+            : [];
+        });
+      }
+
+      if (selectedSections.length === 0) {
+        alert('시편 종류를 1개 이상 선택해주세요');
+        return;
+      }
+
+      // body.js의 registerOrder()가 읽는 noParsedData.sectionItems에 주입
+      // (let noParsedData가 body.js에서 선언되어 있음 — 같은 스크립트 스코프 공유)
+      const prev = (typeof noParsedData !== 'undefined') ? noParsedData : null;
+      try {
+        const tmp = {
+          makers: [],
+          colorsByMaker: {},
+          sectionItems: sectionItems,
+          sectionEA: {},
+        };
+        if (typeof noParsedData !== 'undefined') {
+          noParsedData = tmp;
+        } else {
+          window.noParsedData = tmp;
+        }
+        return _origRegister();
+      } finally {
+        if (typeof noParsedData !== 'undefined') {
+          noParsedData = prev;
+        }
+      }
+    };
+    return true;
+  }
+
   function installCloseOverride() {
     if (typeof window.closeModal !== 'function') return false;
     const _origClose = window.closeModal;
@@ -281,17 +457,19 @@
   }
 
   // ─────────────────────────────────────────────────────
-  // 9. 초기화
+  // 7. 초기화
   // ─────────────────────────────────────────────────────
   function init() {
+    patchDefaultItems();
     migrateFormToPage();
     customizeForm();
 
     let tries = 0;
     const wait = setInterval(() => {
-      if (installOpenOverride() && installCloseOverride()) {
-        clearInterval(wait);
-      }
+      const ok1 = installOpenOverride();
+      const ok2 = installCloseOverride();
+      const ok3 = installRegisterOverride();
+      if (ok1 && ok2 && ok3) clearInterval(wait);
       if (++tries > 50) clearInterval(wait);
     }, 100);
   }
