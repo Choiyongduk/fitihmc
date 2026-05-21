@@ -34,6 +34,7 @@
     { value: '재도장',       label: '재도장' },
     { value: '층간부착',     label: '층간부착' },
     { value: 'O/B층간부착',  label: 'O/B층간부착' },
+    { value: '투톤도막',     label: '투톤도막' },
     { value: '중도도막',     label: '중도도막' },
     { value: '내판도막',     label: '내판도막' },
     { value: '중도 삭제',    label: '중도 삭제 도막' },
