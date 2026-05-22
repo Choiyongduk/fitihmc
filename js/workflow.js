@@ -309,9 +309,9 @@ function _wfInjectBack(pageId, stageKey){
 }
 
 // 워크플로우 nav-item 활성화 표시
-function _wfSetNavActive(){
+function _wfSetNavActive(btnId){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const nb = document.getElementById('wf-nav-btn');
+  const nb = document.getElementById(btnId||'wf-nav-btn');
   if(nb) nb.classList.add('active');
 }
 
@@ -320,8 +320,81 @@ function wfNav(){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const wp = document.getElementById('page-workflow');
   if(wp) wp.classList.add('active');
-  _wfSetNavActive();
+  _wfSetNavActive('wf-nav-btn');
   wfInit();
+}
+
+// ──────────────────────────────────────────────
+// 차수 목록 (조밀한 표 — 많은 차수 빠르게 훑기)
+// ──────────────────────────────────────────────
+function wfListNav(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const wp = document.getElementById('page-workflow');
+  if(wp) wp.classList.add('active');
+  _wfSetNavActive('wf-list-btn');
+  wfListView();
+}
+
+function wfListView(){
+  wfCurrentOrderId = null;
+  const orders = activeDB().orders[CY]||[];
+  const body = document.getElementById('wf-body');
+  if(!body) return;
+
+  const rows = orders.length ? orders.map(o=>{
+    const st = wfComputeStages(o);
+    const curKey = wfCurrentStageKey(st);
+    const curLabel = WF_STAGES.find(s=>s.key===curKey).label;
+    const totalNg = Object.values(st).reduce((a,s)=>a+(s.ng||0),0);
+    const dday = wfDday(o);
+    const doneCnt = Object.values(st).filter(s=>s.state==='done').length;
+
+    // 미니 진행 점 5개
+    const dots = WF_STAGES.map(s=>{
+      const state = st[s.key].state;
+      const c = state==='done'?'var(--g)':state==='partial'?'var(--o)':'var(--border2)';
+      return `<span style="width:6px;height:6px;border-radius:50%;background:${c};display:inline-block;margin-right:2px"></span>`;
+    }).join('');
+
+    const ddayChip = dday==null ? '<span style="color:var(--tx3)">-</span>' :
+      `<span style="font-family:var(--mono);color:${dday<0?'var(--r)':dday<=7?'var(--o)':'var(--tx2)'}">D${dday<0?'+'+(-dday):'-'+dday}</span>`;
+
+    return `
+      <tr onclick="wfOpenOrder('${o.id}')" style="cursor:pointer;border-bottom:1px solid var(--border)"
+          onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+        <td style="padding:9px 10px;font-family:var(--mono);font-weight:700;white-space:nowrap">${CY}-${o.cha||'?'}</td>
+        <td style="padding:9px 10px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.purpose||'-'}</td>
+        <td style="padding:9px 10px;white-space:nowrap;color:var(--tx2)">${o.mgr||'-'}</td>
+        <td style="padding:9px 10px;text-align:center;color:var(--tx2)">${(o.specimens||[]).length}</td>
+        <td style="padding:9px 10px;white-space:nowrap">${dots} <span style="font-size:12px;color:var(--b);font-weight:600;margin-left:4px">${curLabel}</span> <span style="font-size:11px;color:var(--tx3)">${doneCnt}/5</span></td>
+        <td style="padding:9px 10px;text-align:right;white-space:nowrap">
+          ${totalNg>0?`<span style="font-size:11px;background:var(--rbg);color:var(--r);padding:2px 7px;border-radius:6px;margin-right:6px">NG ${totalNg}</span>`:''}${ddayChip}
+        </td>
+      </tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--tx3)">등록된 차수가 없습니다</td></tr>`;
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700">차수 목록</div>
+      <span class="year-chip">${CY}년</span>
+      <span style="font-size:12px;color:var(--tx3)">총 ${orders.length}차수</span>
+      <button class="btn" style="margin-left:auto;font-size:12px" onclick="(window.openNewOrderModal||function(){})()">+ 신규 차수 등록</button>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg2)">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:var(--bg3);border-bottom:1px solid var(--border2);text-align:left;color:var(--tx3);font-size:11px">
+            <th style="padding:8px 10px;font-weight:700">차수</th>
+            <th style="padding:8px 10px;font-weight:700">평가목적</th>
+            <th style="padding:8px 10px;font-weight:700">담당</th>
+            <th style="padding:8px 10px;font-weight:700;text-align:center">종수</th>
+            <th style="padding:8px 10px;font-weight:700">진행</th>
+            <th style="padding:8px 10px;font-weight:700;text-align:right">상태</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
 }
 
 // 부팅: 데이터 준비 후(common.js DOMContentLoaded 다음) 홈 렌더
@@ -332,6 +405,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
 // 전역 노출
 window.wfInit = wfInit;
 window.wfNav = wfNav;
+window.wfListNav = wfListNav;
+window.wfListView = wfListView;
 window.wfRenderHome = wfRenderHome;
 window.wfOpenOrder = wfOpenOrder;
 window.wfStage = wfStage;
