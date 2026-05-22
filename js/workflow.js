@@ -9,12 +9,19 @@ let wfCurrentOrderId = null;
 
 // 단계 → 기존 페이지/초기화 매핑
 const WF_STAGES = [
-  { key:'request',    label:'의뢰',   page:'orders',     icon:'＋', launch(){ if(window.renderOrderList) renderOrderList(); if(window.selectOrder) selectOrder(wfCurrentOrderId); else if(window.renderOrderDetail) renderOrderDetail(wfCurrentOrderId); } },
-  { key:'inspection', label:'검수',   page:'inspection', icon:'✓', launch(){ if(window.inspectionInit) inspectionInit(); } },
-  { key:'middle',     label:'중간',   page:'thickness',  icon:'▢', launch(){ if(window.tkInit) tkInit(); } },
-  { key:'final',      label:'최종',   page:'results',    icon:'✎', launch(){ if(window.rsInit) rsInit(); } },
-  { key:'report',     label:'보고서', page:'report',     icon:'▤', launch(){ if(window.rpInit) rpInit(); } },
+  { key:'request',    label:'의뢰',   page:'orders',    icon:'＋', launch(){ _wfLoadOrderDetail(); } },
+  { key:'inspection', label:'검수',   page:'orders',    icon:'✓', launch(){ _wfLoadOrderDetail(); } },
+  { key:'middle',     label:'중간',   page:'thickness', icon:'▢', launch(){ if(typeof tkInit==='function') tkInit(); } },
+  { key:'final',      label:'최종',   page:'results',   icon:'✎', launch(){ if(typeof rsInit==='function') rsInit(); } },
+  { key:'report',     label:'보고서', page:'report',    icon:'▤', launch(){ if(typeof rpInit==='function') rpInit(); } },
 ];
+
+// 의뢰/검수 = 의뢰관리 상세 화면 (기본정보·시편·시료수령 검수가 여기 있음)
+function _wfLoadOrderDetail(){
+  if(typeof renderOrderList==='function') renderOrderList();
+  if(typeof renderOrderDetail==='function') renderOrderDetail(wfCurrentOrderId);
+  if(typeof updateYearCost==='function') updateYearCost();
+}
 
 // ──────────────────────────────────────────────
 // 단계별 진행 상태 계산
@@ -102,7 +109,31 @@ function wfInit(){
 }
 
 function _wfOrderById(id){
-  return (activeDB().orders[CY]||[]).find(o=>o.id===id);
+  const db = activeDB();
+  for(const yr of Object.keys(db.orders||{})){
+    const o = (db.orders[yr]||[]).find(x=>x.id===id);
+    if(o) return o;
+  }
+  return null;
+}
+
+function _wfOrderYear(id){
+  const db = activeDB();
+  for(const yr of Object.keys(db.orders||{})){
+    if((db.orders[yr]||[]).some(x=>x.id===id)) return yr;
+  }
+  return null;
+}
+
+// 차수를 "진짜" 전역(let)에 반영 + 연도(CY) 동기화
+// (window.selectedOrderId 만으로는 let 전역이 안 바뀌어 각 화면이 못 읽음)
+function _wfSelectOrder(id){
+  const yr = _wfOrderYear(id);
+  if(yr && String(CY)!==String(yr) && typeof changeYear==='function'){
+    changeYear(yr);  // CY(let) 갱신 + 목록 재렌더
+  }
+  try { selectedOrderId = id; } catch(e){}   // let 전역 직접 갱신 (classic script 공유 스코프)
+  window.selectedOrderId = id;               // 호환용
 }
 
 // ──────────────────────────────────────────────
@@ -167,7 +198,7 @@ function wfOpenOrder(id){
   const o = _wfOrderById(id);
   if(!o){ wfRenderHome(); return; }
   wfCurrentOrderId = id;
-  window.selectedOrderId = id;
+  _wfSelectOrder(id);
 
   // 워크플로우 페이지 활성화
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -250,7 +281,7 @@ function _wfStageHint(key){
 function wfStage(stage){
   const s = WF_STAGES.find(x=>x.key===stage);
   if(!s || !wfCurrentOrderId) return;
-  window.selectedOrderId = wfCurrentOrderId;
+  _wfSelectOrder(wfCurrentOrderId);
 
   // 기존 nav 사용 (페이지 전환 + nav-item 활성화는 생략 — 워크플로우 컨텍스트 유지)
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -259,6 +290,26 @@ function wfStage(stage){
 
   try { s.launch(); } catch(e){ console.warn('[wfStage]', stage, e); }
   _wfInjectBack(s.page, stage);
+  _wfScopeStage(s.page);
+}
+
+// 워크플로우 컨텍스트: 각 화면의 연도/차수 선택 UI 숨김 (이미 그 차수이므로)
+const _WF_SEL_IDS = {
+  thickness: ['tk-year-sel','tk-order-sel'],
+  results:   ['rs-year-sel','rs-order-sel'],
+  report:    ['rp-year-sel','rp-order-sel'],
+};
+function _wfScopeStage(pageId){
+  (_WF_SEL_IDS[pageId]||[]).forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  if(pageId === 'orders'){
+    const list = document.getElementById('order-list-panel');
+    if(list) list.style.display = 'none';
+    const layout = document.getElementById('orders-layout');
+    if(layout) layout.style.gridTemplateColumns = '1fr';
+  }
 }
 
 function _wfInjectBack(pageId, stageKey){
