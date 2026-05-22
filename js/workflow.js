@@ -9,19 +9,12 @@ let wfCurrentOrderId = null;
 
 // 단계 → 기존 페이지/초기화 매핑
 const WF_STAGES = [
-  { key:'request',    label:'의뢰',   page:'orders',    icon:'＋', launch(){ _wfLoadOrderDetail(); } },
-  { key:'inspection', label:'검수',   page:'orders',    icon:'✓', launch(){ _wfLoadOrderDetail(); } },
-  { key:'middle',     label:'중간',   page:'thickness', icon:'▢', launch(){ if(typeof tkInit==='function') tkInit(); } },
-  { key:'final',      label:'최종',   page:'results',   icon:'✎', launch(){ if(typeof rsInit==='function') rsInit(); } },
-  { key:'report',     label:'보고서', page:'report',    icon:'▤', launch(){ if(typeof rpInit==='function') rpInit(); } },
+  { key:'request',    label:'의뢰',   page:'orders' },
+  { key:'inspection', label:'검수',   page:'workflow' },
+  { key:'middle',     label:'중간',   page:'thickness' },
+  { key:'final',      label:'최종',   page:'results' },
+  { key:'report',     label:'보고서', page:'report' },
 ];
-
-// 의뢰/검수 = 의뢰관리 상세 화면 (기본정보·시편·시료수령 검수가 여기 있음)
-function _wfLoadOrderDetail(){
-  if(typeof renderOrderList==='function') renderOrderList();
-  if(typeof renderOrderDetail==='function') renderOrderDetail(wfCurrentOrderId);
-  if(typeof updateYearCost==='function') updateYearCost();
-}
 
 // ──────────────────────────────────────────────
 // 단계별 진행 상태 계산
@@ -281,16 +274,59 @@ function _wfStageHint(key){
 function wfStage(stage){
   const s = WF_STAGES.find(x=>x.key===stage);
   if(!s || !wfCurrentOrderId) return;
-  _wfSelectOrder(wfCurrentOrderId);
+  const oid = wfCurrentOrderId;
+  const yr  = _wfOrderYear(oid) || String(CY);
+  _wfSelectOrder(oid);  // 전역도 맞춰둠(호환)
 
-  // 기존 nav 사용 (페이지 전환 + nav-item 활성화는 생략 — 워크플로우 컨텍스트 유지)
+  // 검수: 워크플로우 안에서 인라인 체크리스트
+  if(stage === 'inspection'){ wfInspect(oid, yr); return; }
+
+  // 그 외: 해당 페이지 활성화 + 화면을 그 차수의 연도·ID로 직접 구동
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pg = document.getElementById('page-'+s.page);
   if(pg) pg.classList.add('active');
 
-  try { s.launch(); } catch(e){ console.warn('[wfStage]', stage, e); }
+  _wfDriveStage(s.page, yr, oid);
   _wfInjectBack(s.page, stage);
   _wfScopeStage(s.page);
+}
+
+// 연도 셀렉터에 옵션 보장 + 값 설정
+function _wfEnsureYear(selId, yr){
+  const sel = document.getElementById(selId);
+  if(!sel) return null;
+  if(![...sel.options].some(o=>o.value===String(yr))){
+    const opt=document.createElement('option');
+    opt.value=String(yr); opt.textContent=yr+'년';
+    sel.appendChild(opt);
+  }
+  sel.value = String(yr);
+  return sel;
+}
+
+// 각 화면을 "그 차수의 연도+ID"로 직접 구동 (전역 CY에 의존하지 않음)
+function _wfDriveStage(pageId, yr, oid){
+  if(pageId === 'thickness'){
+    _wfEnsureYear('tk-year-sel', yr);
+    if(typeof tkChangeYear==='function') tkChangeYear(yr);
+    const o=document.getElementById('tk-order-sel'); if(o) o.value=oid;
+    if(typeof tkSelectOrder==='function') tkSelectOrder(oid);
+  } else if(pageId === 'results'){
+    _wfEnsureYear('rs-year-sel', yr);
+    if(typeof rsChangeYear==='function') rsChangeYear(yr);
+    const o=document.getElementById('rs-order-sel'); if(o) o.value=oid;
+    if(typeof rsSelectOrder==='function') rsSelectOrder(oid);
+  } else if(pageId === 'report'){
+    _wfEnsureYear('rp-year-sel', yr);
+    if(typeof rpChangeYear==='function') rpChangeYear(yr);
+    const o=document.getElementById('rp-order-sel'); if(o) o.value=oid;
+    if(typeof rpSelectOrder==='function') rpSelectOrder(oid);
+  } else if(pageId === 'orders'){
+    // renderOrderDetail은 CY 기준 → changeYear로 CY 확실히 맞춤(common.js 내부에서 설정)
+    if(typeof changeYear==='function') changeYear(yr);
+    if(typeof renderOrderDetail==='function') renderOrderDetail(oid);
+    if(typeof updateYearCost==='function') updateYearCost();
+  }
 }
 
 // 워크플로우 컨텍스트: 각 화면의 연도/차수 선택 UI 숨김 (이미 그 차수이므로)
@@ -311,6 +347,87 @@ function _wfScopeStage(pageId){
     if(layout) layout.style.gridTemplateColumns = '1fr';
   }
 }
+
+// ──────────────────────────────────────────────
+// 검수 — 업체/색상/시편종류별 시료수령 체크리스트 (워크플로우 인라인)
+// ──────────────────────────────────────────────
+function wfInspect(oid, yr){
+  const o = _wfOrderById(oid);
+  const body = document.getElementById('wf-body');
+  if(!o || !body) return;
+
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-workflow')?.classList.add('active');
+
+  const allSecs = (o.specimens||[]).flatMap(sp=>sp.sections||[]);
+  const total = allSecs.length;
+  const done  = allSecs.filter(s=>s.receiptOk).length;
+
+  // 업체별 → 색상(시편)별 → 시편종류 행
+  const makers = [...new Set((o.specimens||[]).map(sp=>sp.maker))];
+  const groups = makers.map(m=>{
+    const sps = (o.specimens||[]).filter(sp=>sp.maker===m);
+    const colorBlocks = sps.map(sp=>{
+      const spIdx = (o.specimens||[]).indexOf(sp);
+      const rows = (sp.sections||[]).map((sec,si)=>{
+        const items = (sec.items||[]).filter(it=>it.checked!==false).map(it=>it.name).join(', ');
+        const ea = sec.receiptEa || sec.receiptCnt || '';
+        return `
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-top:1px solid var(--border);cursor:pointer">
+            <input type="checkbox" ${sec.receiptOk?'checked':''}
+                   onchange="wfInspectToggle('${oid}',${spIdx},${si},this.checked)"
+                   style="width:17px;height:17px;margin-top:2px;flex-shrink:0;cursor:pointer">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;color:${sec.receiptOk?'var(--g)':'var(--tx)'}">${sec.name} ${ea?`<span style="font-weight:400;color:var(--tx3)">· ${ea}EA</span>`:''}</div>
+              <div style="font-size:11px;color:var(--tx3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${items||'-'}</div>
+            </div>
+            ${sec.receiptOk?'<span style="font-size:11px;color:var(--g);flex-shrink:0">✓ 수령</span>':'<span style="font-size:11px;color:var(--tx3);flex-shrink:0">대기</span>'}
+          </label>`;
+      }).join('');
+      return `
+        <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;background:var(--bg2)">
+          <div style="padding:8px 12px;background:var(--bg3);font-size:12px;font-weight:700;color:var(--tx2)">${sp.color||'-'} <span style="color:var(--tx3);font-weight:400">(${m})</span></div>
+          ${rows||'<div style="padding:10px 12px;color:var(--tx3);font-size:12px">시편종류 없음</div>'}
+        </div>`;
+    }).join('');
+    return colorBlocks;
+  }).join('');
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn" style="font-size:12px" onclick="wfOpenOrder('${oid}')">← ${yr}-${o.cha||'?'}차</button>
+      <button class="btn primary" style="font-size:12px" onclick="wfStage('middle')">다음: 중간 →</button>
+      <div style="font-size:16px;font-weight:700;margin-left:8px">검수 — 시료수령 체크</div>
+      <span style="font-size:12px;font-family:var(--mono);color:${done===total&&total?'var(--g)':'var(--o)'};margin-left:auto">${done}/${total} 완료</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn primary" style="font-size:13px" onclick="wfInspectAll('${oid}',true)">전체 검수 완료 ✓</button>
+      <button class="btn" style="font-size:13px" onclick="wfInspectAll('${oid}',false)">전체 해제</button>
+    </div>
+    ${groups || '<div style="text-align:center;padding:40px;color:var(--tx3)">시편이 없습니다</div>'}`;
+}
+
+function wfInspectToggle(oid, spIdx, secIdx, checked){
+  const o = _wfOrderById(oid); if(!o) return;
+  const sec = o.specimens?.[spIdx]?.sections?.[secIdx];
+  if(!sec) return;
+  sec.receiptOk = checked;
+  if(checked && !sec.receiptDate) sec.receiptDate = new Date().toISOString().slice(0,10);
+  if(typeof autoSave==='function') autoSave();
+  wfInspect(oid, _wfOrderYear(oid)||String(CY));  // 재렌더 (카운트 갱신)
+}
+
+function wfInspectAll(oid, val){
+  const o = _wfOrderById(oid); if(!o) return;
+  const today = new Date().toISOString().slice(0,10);
+  (o.specimens||[]).forEach(sp=>(sp.sections||[]).forEach(sec=>{
+    sec.receiptOk = val;
+    if(val && !sec.receiptDate) sec.receiptDate = today;
+  }));
+  if(typeof autoSave==='function') autoSave();
+  wfInspect(oid, _wfOrderYear(oid)||String(CY));
+}
+
 
 function _wfInjectBack(pageId, stageKey){
   const page = document.getElementById('page-'+pageId);
@@ -461,3 +578,6 @@ window.wfListView = wfListView;
 window.wfRenderHome = wfRenderHome;
 window.wfOpenOrder = wfOpenOrder;
 window.wfStage = wfStage;
+window.wfInspect = wfInspect;
+window.wfInspectToggle = wfInspectToggle;
+window.wfInspectAll = wfInspectAll;
