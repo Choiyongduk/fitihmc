@@ -1631,8 +1631,9 @@
                 <!-- 네비게이션 (데스크톱: 세로 / 모바일: 가로 탭바) -->
                 <div class="nav-sec">
                     <div class="nav-lbl">메인</div>
+                    <button id="wf-nav-btn" class="nav-item active" onclick="wfNav()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="3" cy="3" r="2" stroke="currentColor" stroke-width="1.2"/><circle cx="3" cy="11" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M3 5v4M5 3h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span><span>차수 진행</span></button>
                     <button class="nav-item" onclick="nav('dashboard',this);dbInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor" /><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor" /><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor" /><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor" /></svg></span><span>대시보드</span></button>
-                    <button class="nav-item active" onclick="nav('orders',this)"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2" /><path d="M5 4h4M5 7h4M5 10h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>의뢰 관리</span></button>
+                    <button class="nav-item" onclick="nav('orders',this)"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2" /><path d="M5 4h4M5 7h4M5 10h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>의뢰 관리</span></button>
                 </div>
                 <div class="nav-sec">
                     <div class="nav-lbl">시험</div>
@@ -1670,8 +1671,17 @@
             <!-- ══ 메인 ══ -->
             <main class="main">
 
+                <!-- 차수 진행 (워크플로우) -->
+                <div id="page-workflow" class="page active">
+                    <div class="topbar">
+                        <div class="topbar-title">차수 진행</div>
+                        <div class="topbar-right"></div>
+                    </div>
+                    <div style="padding:20px;overflow-y:auto;height:calc(100vh - 56px)" id="wf-body"></div>
+                </div>
+
                 <!-- 의뢰 관리 -->
-                <div id="page-orders" class="page active">
+                <div id="page-orders" class="page">
                     <div class="topbar">
                         <span class="topbar-title">의뢰 관리</span>
                         <span class="year-chip" id="year-chip">2024년</span>
@@ -2424,5 +2434,6 @@
         <script src="js/inspection.js"></script>
         <script src="js/new-order-page.js"></script>
         <script src="js/report.js"></script>
+        <script src="js/workflow.js"></script>
     </body>
 </html>
