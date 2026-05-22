@@ -35,8 +35,18 @@ function nav(id, btn){
 
 function changeYear(y){
   CY = y;
-  document.getElementById('year-chip').textContent = y+'년';
-  document.getElementById('no-year').value = y;
+  const chip = document.getElementById('year-chip'); if(chip) chip.textContent = y+'년';
+  const noy = document.getElementById('no-year'); if(noy) noy.value = y;
+  // 사이드바 연도 드롭다운 동기화 (옵션 없으면 추가) — 새 연도(2026 등)도 정상 표시
+  const ysel = document.getElementById('year-sel');
+  if(ysel){
+    if(![...ysel.options].some(o=>o.value===String(y))){
+      const opt = document.createElement('option');
+      opt.value = String(y); opt.textContent = y+'년';
+      ysel.insertBefore(opt, ysel.firstChild);
+    }
+    ysel.value = String(y);
+  }
   const db = activeDB(); const ct = activeCONTRACT();
   if(!db.orders[y]) db.orders[y]=[];
   if(!ct[y]) ct[y]=0;

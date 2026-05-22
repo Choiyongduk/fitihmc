@@ -558,7 +558,14 @@ window.addEventListener('DOMContentLoaded',()=>{
   syncNavBySystem();
   const hasSaved = loadSaved();
   // 저장된 데이터가 있으면 복원, 없으면 샘플 데이터 유지
-  const defaultYear = Object.keys(activeDB().orders).find(y=>activeDB().orders[y]?.length) || '2024';
+  // 연도 드롭다운을 실제 DB 연도로 재구성 (2026 등 새 연도 포함)
+  const ysel = document.getElementById('year-sel');
+  if(ysel){
+    const years = [...new Set([...Object.keys(activeDB().orders), '2026','2025','2024'])]
+      .filter(Boolean).sort().reverse();
+    ysel.innerHTML = years.map(y=>`<option value="${y}">${y}년</option>`).join('');
+  }
+  const defaultYear = Object.keys(activeDB().orders).find(y=>activeDB().orders[y]?.length) || '2026';
   changeYear(defaultYear);
   const firstOrder = activeDB().orders[defaultYear]?.[0];
   if(firstOrder) selectOrder(firstOrder.id);
