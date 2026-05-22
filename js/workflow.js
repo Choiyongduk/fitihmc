@@ -258,24 +258,54 @@ function wfStage(stage){
   if(pg) pg.classList.add('active');
 
   try { s.launch(); } catch(e){ console.warn('[wfStage]', stage, e); }
-  _wfInjectBack(s.page);
+  _wfInjectBack(s.page, stage);
 }
 
-function _wfInjectBack(pageId){
+function _wfInjectBack(pageId, stageKey){
   const page = document.getElementById('page-'+pageId);
   if(!page) return;
   const tb = page.querySelector('.topbar');
   if(!tb) return;
-  let b = tb.querySelector('.wf-back-btn');
-  if(!b){
-    b = document.createElement('button');
-    b.className = 'btn wf-back-btn';
-    b.style.cssText = 'font-size:12px;margin-right:6px';
-    tb.insertBefore(b, tb.firstChild);
+  let bar = tb.querySelector('.wf-nav-bar');
+  if(!bar){
+    bar = document.createElement('div');
+    bar.className = 'wf-nav-bar';
+    bar.style.cssText = 'display:flex;align-items:center;gap:6px;margin-right:8px';
+    tb.insertBefore(bar, tb.firstChild);
   }
-  b.onclick = ()=> wfOpenOrder(wfCurrentOrderId);
   const o = _wfOrderById(wfCurrentOrderId);
-  b.innerHTML = `← ${CY}-${o?o.cha:''}차 워크플로우`;
+  const idx = WF_STAGES.findIndex(s=>s.key===stageKey);
+  const prev = WF_STAGES[idx-1];
+  const next = WF_STAGES[idx+1];
+  bar.innerHTML = '';
+
+  // ← 워크플로우(차수)로
+  const back = document.createElement('button');
+  back.className = 'btn';
+  back.style.cssText = 'font-size:12px';
+  back.innerHTML = `← ${CY}-${o?o.cha:''}차`;
+  back.title = '차수 워크플로우로';
+  back.onclick = ()=> wfOpenOrder(wfCurrentOrderId);
+  bar.appendChild(back);
+
+  // 이전 단계
+  if(prev){
+    const pv = document.createElement('button');
+    pv.className = 'btn';
+    pv.style.cssText = 'font-size:12px';
+    pv.innerHTML = `← ${prev.label}`;
+    pv.onclick = ()=> wfStage(prev.key);
+    bar.appendChild(pv);
+  }
+  // 다음 단계 (쭉쭉 진행)
+  if(next){
+    const nx = document.createElement('button');
+    nx.className = 'btn primary';
+    nx.style.cssText = 'font-size:12px';
+    nx.innerHTML = `다음: ${next.label} →`;
+    nx.onclick = ()=> wfStage(next.key);
+    bar.appendChild(nx);
+  }
 }
 
 // 워크플로우 nav-item 활성화 표시

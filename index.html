@@ -1588,20 +1588,12 @@
                     <div class="logo-tag">⬡ FITI × HMC</div>
                     <div class="logo-title" id="sys-title">도장 평가 시스템</div>
                     <div class="logo-sub" id="sys-sub">차체도장 용역 관리</div>
-                    <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
-                        <button id="sys-tab-body" onclick="switchSystem('body')"
-                                style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--b);background:var(--bbg);color:var(--b)">
-                            차체도장
-                        </button>
-                        <button id="sys-tab-wheel" onclick="switchSystem('wheel')"
-                                style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3)">
-                            휠도장
-                        </button>
-                        <button id="sys-tab-dgu" onclick="switchSystem('dgu')"
-                                style="flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3)">
-                            DGU
-                        </button>
-                    </div>
+                    <select id="sys-select" onchange="switchSystem(this.value)"
+                            style="width:100%;margin-top:10px;height:38px;padding:0 10px;font-size:13px;font-weight:700;font-family:var(--sans);color:var(--tx);background:var(--bg3);border:1px solid var(--border2);border-radius:7px;cursor:pointer;outline:none">
+                        <option value="body">차체도장</option>
+                        <option value="wheel">휠도장 (준비중)</option>
+                        <option value="dgu">DGU (준비중)</option>
+                    </select>
                 </div>
                 <div class="year-bar">
                     <select class="year-sel" id="year-sel" onchange="changeYear(this.value)">
@@ -1614,37 +1606,20 @@
 
                 <!-- 모바일: 시스템 전환 버튼 (상단탭 맨 앞) -->
                 <div class="sys-tab-row" style="display:none">
-                    <button id="sys-tab-body-m" onclick="switchSystem('body')"
-                            style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--b);background:var(--bbg);color:var(--b);width:38px">
-                        차체
-                    </button>
-                    <button id="sys-tab-wheel-m" onclick="switchSystem('wheel')"
-                            style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3);width:38px">
-                        휠
-                    </button>
-                    <button id="sys-tab-dgu-m" onclick="switchSystem('dgu')"
-                            style="padding:2px 5px;font-size:8px;font-weight:700;border-radius:3px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--tx3);width:38px">
-                        DGU
-                    </button>
+                    <select id="sys-select-m" onchange="switchSystem(this.value)"
+                            style="height:34px;font-size:12px;font-weight:700;font-family:var(--sans);border:1px solid var(--border2);border-radius:6px;background:var(--bg3);color:var(--tx);padding:0 4px;outline:none">
+                        <option value="body">차체</option>
+                        <option value="wheel">휠</option>
+                        <option value="dgu">DGU</option>
+                    </select>
                 </div>
 
                 <!-- 네비게이션 (데스크톱: 세로 / 모바일: 가로 탭바) -->
                 <div class="nav-sec">
                     <div class="nav-lbl">메인</div>
-                    <button id="wf-nav-btn" class="nav-item active" onclick="wfNav()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="3" cy="3" r="2" stroke="currentColor" stroke-width="1.2"/><circle cx="3" cy="11" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M3 5v4M5 3h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span><span>차수 진행</span></button>
                     <button class="nav-item" onclick="nav('dashboard',this);dbInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor" /><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor" /><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor" /><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor" /></svg></span><span>대시보드</span></button>
-                    <button class="nav-item" onclick="nav('orders',this)"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2" /><path d="M5 4h4M5 7h4M5 10h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>의뢰 관리</span></button>
+                    <button id="wf-nav-btn" class="nav-item active" onclick="wfNav()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="3" cy="3" r="2" stroke="currentColor" stroke-width="1.2"/><circle cx="3" cy="11" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M3 5v4M5 3h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span><span>차수 진행</span></button>
                 </div>
-                <div class="nav-sec">
-                    <div class="nav-lbl">시험</div>
-                    <button class="nav-item" onclick="nav('thickness',this);tkInit()" data-nav="thickness"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2" /><path d="M4 10V7M7 10V5M10 10V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>중간결과</span></button>
-                    <button class="nav-item" onclick="nav('results',this);rsInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L5 11H3V9L9.5 2.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.2" /></svg></span><span>시험결과</span></button>
-                </div>
-                <div class="nav-sec">
-                    <div class="nav-lbl">검수</div>
-                    <button class="nav-item" onclick="nav('inspection',this);inspectionInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3 3 7-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span>검수 관리</span><span class="nav-badge" id="inspection-pending-badge" style="display:none">0</span></button>
-                </div>
-
                 <div class="nav-sec admin-only" id="nav-sec-admin" style="display:none">
                     <div class="nav-lbl">관리</div>
                     <button class="nav-item" onclick="nav('admin',this);adminInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2" /><path d="M2 12c0-2.5 2.2-4 5-4s5 1.5 5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>회원관리</span><span class="nav-badge" id="admin-pending-badge" style="display:none">0</span></button>
@@ -1653,7 +1628,6 @@
                 <div class="nav-sec">
                     <div class="nav-lbl">알림</div>
                     <button class="nav-item" onclick="nav('notifications',this);ngInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5a4 4 0 0 1 4 4v3l1 1.5H2L3 8.5v-3a4 4 0 0 1 4-4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><path d="M5.5 11.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.2" /></svg></span><span>NG 알림</span><span class="nav-badge" id="ng-badge" style="display:none">0</span></button>
-                    <button class="nav-item" onclick="nav('report',this);rpInit()"><span class="icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 1h6l3 3v9H3V1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><path d="M8.5 1v3.5H12" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><path d="M5 7h4M5 9.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg></span><span>보고서</span></button>
                 </div>
 
                 <!-- 데스크톱 전용 푸터 -->

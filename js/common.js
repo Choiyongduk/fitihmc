@@ -357,10 +357,18 @@ function switchSystem(sys){
   // 데스크톱 탭 스타일 헬퍼
   const tabStyle = (active) =>
     `flex:1;padding:4px 6px;font-size:10px;font-weight:700;border-radius:4px;cursor:pointer;font-family:var(--sans);border:1px solid ${active?'var(--b)':'var(--border2)'};background:${active?'var(--bbg)':'var(--bg3)'};color:${active?'var(--b)':'var(--tx3)'}`;
-  document.getElementById('sys-tab-body').style.cssText  = tabStyle(!isWheel&&!isDgu);
-  document.getElementById('sys-tab-wheel').style.cssText = tabStyle(isWheel);
+  const tabBody = document.getElementById('sys-tab-body');
+  if(tabBody) tabBody.style.cssText  = tabStyle(!isWheel&&!isDgu);
+  const tabWheel = document.getElementById('sys-tab-wheel');
+  if(tabWheel) tabWheel.style.cssText = tabStyle(isWheel);
   const dguBtn = document.getElementById('sys-tab-dgu');
   if(dguBtn) dguBtn.style.cssText = tabStyle(isDgu);
+
+  // 시스템 드롭다운 동기화 (데스크톱·모바일)
+  const sysSel = document.getElementById('sys-select');
+  if(sysSel) sysSel.value = sys;
+  const sysSelM = document.getElementById('sys-select-m');
+  if(sysSelM) sysSelM.value = sys;
 
   // 모바일 탭 스타일
   const mStyle = (active) =>
