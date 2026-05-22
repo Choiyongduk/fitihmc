@@ -7,6 +7,9 @@
 
 let wfCurrentOrderId = null;
 
+// 차수 표시 정규화: 끝의 '차'/'차수' 제거 (1차 → 1, 표시 시 +차)
+function _wfCha(cha){ return String(cha==null?'?':cha).replace(/\s*차수?\s*$/,''); }
+
 // 단계 → 기존 페이지/초기화 매핑
 const WF_STAGES = [
   { key:'request',    label:'의뢰',   page:'workflow' },
@@ -159,7 +162,7 @@ function wfRenderHome(){
     <div onclick="wfOpenOrder('${o.id}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.15s"
          onmouseover="this.style.borderColor='var(--b)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span style="font-family:var(--mono);font-weight:700;font-size:14px;color:var(--tx)">${CY}-${o.cha||'?'}차</span>
+        <span style="font-family:var(--mono);font-weight:700;font-size:14px;color:var(--tx)">${CY}-${_wfCha(o.cha)}차</span>
         <span style="font-size:12px;color:var(--tx3)">${o.mgr||''} · ${(o.specimens||[]).length}종</span>
         <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
           ${totalNg>0?`<span class="badge ng" style="background:var(--rbg);color:var(--r);font-size:10px;padding:2px 7px;border-radius:6px">NG ${totalNg}</span>`:''}
@@ -249,7 +252,7 @@ function wfOpenOrder(id){
     </div>
     <div style="margin:10px 0 4px">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-family:var(--mono);font-weight:700;font-size:18px">${CY}-${o.cha||'?'}차</span>
+        <span style="font-family:var(--mono);font-weight:700;font-size:18px">${CY}-${_wfCha(o.cha)}차</span>
         <span style="font-size:13px;color:var(--tx3)">${o.mgr||''} · ${(o.specimens||[]).length}종</span>
       </div>
       <div style="font-size:13px;color:var(--tx2);margin-top:3px">${o.purpose||''}</div>
@@ -384,13 +387,13 @@ function wfRequest(oid, yr){
 
   body.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap">
-      <button class="btn" style="font-size:12px" onclick="wfOpenOrder('${oid}')">← ${yr}-${o.cha||'?'}차</button>
+      <button class="btn" style="font-size:12px" onclick="wfOpenOrder('${oid}')">← ${yr}-${_wfCha(o.cha)}차</button>
       <button class="btn primary" style="font-size:12px" onclick="wfStage('inspection')">다음: 검수 →</button>
       <div style="font-size:16px;font-weight:700;margin-left:8px">의뢰 — 시험 요청 내용</div>
       <button class="btn" style="font-size:12px;margin-left:auto" onclick="wfEditOrder('${oid}')">✏️ 상세 편집</button>
     </div>
     <div style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;background:var(--bg2);margin-bottom:14px">
-      ${info('차수', `${yr}-${o.cha||'?'}차`)}
+      ${info('차수', `${yr}-${_wfCha(o.cha)}차`)}
       ${info('평가목적', o.purpose)}
       ${info('현대차 담당', o.mgr)}
       ${info('의뢰일', o.date)}
@@ -434,7 +437,8 @@ function wfInspect(oid, yr){
       const spIdx = (o.specimens||[]).indexOf(sp);
       const rows = (sp.sections||[]).map((sec,si)=>{
         const items = (sec.items||[]).filter(it=>it.checked!==false).map(it=>it.name).join(', ');
-        const ea = sec.receiptEa || sec.receiptCnt || '';
+        const itemCnt = (sec.items||[]).filter(it=>it.checked!==false).length;
+        const ea = sec.receiptEa || sec.receiptCnt || (itemCnt? String(itemCnt) : '');
         const note = sec.receiptNote || '';
         const noteWarn = !sec.receiptOk && note ? 'border-color:var(--o)' : '';
         return `
@@ -470,7 +474,7 @@ function wfInspect(oid, yr){
 
   body.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap">
-      <button class="btn" style="font-size:12px" onclick="wfOpenOrder('${oid}')">← ${yr}-${o.cha||'?'}차</button>
+      <button class="btn" style="font-size:12px" onclick="wfOpenOrder('${oid}')">← ${yr}-${_wfCha(o.cha)}차</button>
       <button class="btn primary" style="font-size:12px" onclick="wfStage('middle')">다음: 중간 →</button>
       <div style="font-size:16px;font-weight:700;margin-left:8px">검수 — 시료수령 체크</div>
       <span style="font-size:12px;font-family:var(--mono);color:${done===total&&total?'var(--g)':'var(--o)'};margin-left:auto">${done}/${total} 완료</span>
@@ -527,7 +531,7 @@ function wfInspectReply(oid){
     if(note) issues++;
     lines.push(`· ${sp.maker}/${sp.color}/${sec.name}: ${sec.receiptOk?'수령완료':'미수령'}${sec.receiptEa?` (${sec.receiptEa}EA)`:''}${note?` — ${note}`:''}`);
   }));
-  const summary = `[검수 회신] ${yr}-${o.cha||'?'}차 (${o.purpose||''})\n수령 ${recv}/${totalSec}건${issues?` · 특이사항 ${issues}건`:''}\n\n${lines.join('\n')}`;
+  const summary = `[검수 회신] ${yr}-${_wfCha(o.cha)}차 (${o.purpose||''})\n수령 ${recv}/${totalSec}건${issues?` · 특이사항 ${issues}건`:''}\n\n${lines.join('\n')}`;
 
   if(!confirm(`현대차 담당자에게 검수 회신을 발송할까요?\n\n${summary}`)) return;
 
@@ -562,7 +566,7 @@ function _wfInjectBack(pageId, stageKey){
   const back = document.createElement('button');
   back.className = 'btn';
   back.style.cssText = 'font-size:12px';
-  back.innerHTML = `← ${CY}-${o?o.cha:''}차`;
+  back.innerHTML = `← ${CY}-${o?_wfCha(o.cha):''}차`;
   back.title = '차수 워크플로우로';
   back.onclick = ()=> wfOpenOrder(wfCurrentOrderId);
   bar.appendChild(back);
@@ -641,7 +645,7 @@ function wfListView(){
     return `
       <tr onclick="wfOpenOrder('${o.id}')" style="cursor:pointer;border-bottom:1px solid var(--border)"
           onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
-        <td style="padding:9px 10px;font-family:var(--mono);font-weight:700;white-space:nowrap">${CY}-${o.cha||'?'}</td>
+        <td style="padding:9px 10px;font-family:var(--mono);font-weight:700;white-space:nowrap">${CY}-${_wfCha(o.cha)}</td>
         <td style="padding:9px 10px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.purpose||'-'}</td>
         <td style="padding:9px 10px;white-space:nowrap;color:var(--tx2)">${o.mgr||'-'}</td>
         <td style="padding:9px 10px;text-align:center;color:var(--tx2)">${(o.specimens||[]).length}</td>

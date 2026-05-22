@@ -185,13 +185,14 @@
 
       return `
         <div class="np-sec-row" data-sec="${escapeAttr(opt.value)}" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:4px;overflow:hidden">
-          <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;font-size:13px">
-            <input type="checkbox" class="np-sec-chk" value="${escapeAttr(opt.value)}" ${checked ? 'checked' : ''} style="margin:0">
-            <span style="font-weight:600;flex:1">${escapeHtml(opt.label)}</span>
-            <span style="font-size:11px;color:var(--tx3);font-family:var(--mono)">${itemCount > 0 ? itemCount + '개' : '항목 없음'}</span>
-            ${itemCount > 0 ? `<button type="button" class="np-sec-toggle" onclick="npToggleItems(this)" 
-              style="background:none;border:none;color:var(--tx3);cursor:pointer;padding:0 4px;font-size:11px;line-height:1">▶</button>` : ''}
-          </label>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:13px">
+            <input type="checkbox" class="np-sec-chk" value="${escapeAttr(opt.value)}" ${checked ? 'checked' : ''} style="margin:0;width:16px;height:16px;cursor:pointer;flex-shrink:0">
+            <div ${itemCount > 0 ? 'onclick="npToggleItems(this)"' : ''} style="flex:1;display:flex;align-items:center;gap:8px;${itemCount > 0 ? 'cursor:pointer' : ''}">
+              <span style="font-weight:600;flex:1">${escapeHtml(opt.label)}</span>
+              <span style="font-size:11px;color:var(--tx3);font-family:var(--mono)">${itemCount > 0 ? itemCount + '개 항목' : '항목 없음'}</span>
+              ${itemCount > 0 ? `<span class="np-sec-chev" style="color:var(--tx3);font-size:11px">▾</span>` : ''}
+            </div>
+          </div>
           ${itemCount > 0 ? `<div class="np-sec-items" style="display:none;flex-wrap:wrap;gap:4px;padding:4px 10px 10px 30px">${itemChips}</div>` : ''}
         </div>
       `;
@@ -201,7 +202,7 @@
     newField.className = 'field';
     newField.style.marginBottom = '10px';
     newField.innerHTML = `
-      <label>시편 종류 <span style="font-size:11px;color:var(--tx3);font-weight:400">(체크한 종류로 시편 생성 · ▶ 클릭으로 시험 항목 편집)</span></label>
+      <label>시편 종류 <span style="font-size:11px;color:var(--tx3);font-weight:400">(체크박스로 종류 선택 · 이름 클릭으로 시험 항목 펼치기)</span></label>
       <div id="np-sec-list" style="background:var(--bg3);padding:8px;border-radius:8px;border:1px solid var(--border)">
         ${rowsHtml}
       </div>
@@ -214,13 +215,14 @@
   // ─────────────────────────────────────────────────────
   // 3. 아코디언 토글
   // ─────────────────────────────────────────────────────
-  window.npToggleItems = function (btn) {
-    const row = btn.closest('.np-sec-row');
+  window.npToggleItems = function (el) {
+    const row = el.closest('.np-sec-row');
     const items = row?.querySelector('.np-sec-items');
     if (!items) return;
     const isOpen = items.style.display !== 'none';
     items.style.display = isOpen ? 'none' : 'flex';
-    btn.textContent = isOpen ? '▶' : '▼';
+    const chev = row.querySelector('.np-sec-chev');
+    if (chev) chev.textContent = isOpen ? '▾' : '▴';
   };
 
   // ─────────────────────────────────────────────────────
@@ -318,7 +320,7 @@
     });
     document.querySelectorAll('.np-item-chk').forEach(c => { c.checked = true; });
     document.querySelectorAll('.np-sec-items').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.np-sec-toggle').forEach(b => b.textContent = '▶');
+    document.querySelectorAll('.np-sec-chev').forEach(b => b.textContent = '▾');
     const customSec = document.getElementById('np-sec-custom');
     if (customSec) customSec.value = '';
 
@@ -417,6 +419,12 @@
         return;
       }
 
+      // 차수(cha) 정규화: 끝의 "차"/"차수" 제거 → "1차" 입력해도 "1차차" 방지
+      const chaEl = document.getElementById('no-cha');
+      if (chaEl) chaEl.value = chaEl.value.trim().replace(/\s*차수?\s*$/,'');
+      const yr = document.getElementById('no-year')?.value;
+      const beforeIds = (((typeof activeDB === 'function' ? activeDB().orders : {})[yr]) || []).map(o => o.id);
+
       // body.js의 registerOrder()가 읽는 noParsedData.sectionItems에 주입
       // (let noParsedData가 body.js에서 선언되어 있음 — 같은 스크립트 스코프 공유)
       const prev = (typeof noParsedData !== 'undefined') ? noParsedData : null;
@@ -432,11 +440,18 @@
         } else {
           window.noParsedData = tmp;
         }
-        return _origRegister();
+        _origRegister();
       } finally {
         if (typeof noParsedData !== 'undefined') {
           noParsedData = prev;
         }
+      }
+
+      // 등록 성공 시 → 그 차수의 워크플로우로 이동 (빈 의뢰관리 화면 대신)
+      const list = (((typeof activeDB === 'function' ? activeDB().orders : {})[yr]) || []);
+      const created = list.find(o => !beforeIds.includes(o.id));
+      if (created && typeof wfOpenOrder === 'function') {
+        setTimeout(() => { try { wfOpenOrder(created.id); } catch (e) {} }, 0);
       }
     };
     return true;
