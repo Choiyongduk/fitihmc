@@ -9,7 +9,7 @@ let wfCurrentOrderId = null;
 
 // 단계 → 기존 페이지/초기화 매핑
 const WF_STAGES = [
-  { key:'request',    label:'의뢰',   page:'orders' },
+  { key:'request',    label:'의뢰',   page:'workflow' },
   { key:'inspection', label:'검수',   page:'workflow' },
   { key:'middle',     label:'중간',   page:'thickness' },
   { key:'final',      label:'최종',   page:'results' },
@@ -280,6 +280,8 @@ function wfStage(stage){
 
   // 검수: 워크플로우 안에서 인라인 체크리스트
   if(stage === 'inspection'){ wfInspect(oid, yr); return; }
+  // 의뢰: 워크플로우 안에서 인라인 요청내용 보기
+  if(stage === 'request'){ wfRequest(oid, yr); return; }
 
   // 그 외: 해당 페이지 활성화 + 화면을 그 차수의 연도·ID로 직접 구동
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -349,6 +351,67 @@ function _wfScopeStage(pageId){
 }
 
 // ──────────────────────────────────────────────
+// 의뢰 — 시험 요청 내용 (워크플로우 인라인)
+// ──────────────────────────────────────────────
+function wfRequest(oid, yr){
+  const o = _wfOrderById(oid);
+  const body = document.getElementById('wf-body');
+  if(!o || !body) return;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-workflow')?.classList.add('active');
+
+  const due = o.due || o.dueDate || o.reqDate || '';
+  const makers = [...new Set((o.specimens||[]).map(sp=>sp.maker))];
+  const specBlocks = makers.map(m=>{
+    const sps = (o.specimens||[]).filter(sp=>sp.maker===m);
+    const colorBlocks = sps.map(sp=>{
+      const rows = (sp.sections||[]).map(sec=>{
+        const items = (sec.items||[]).filter(it=>it.checked!==false).map(it=>it.name).join(', ');
+        return `<tr style="border-top:1px solid var(--border)">
+          <td style="padding:7px 10px;font-size:13px;font-weight:600;white-space:nowrap;vertical-align:top">${sec.name}</td>
+          <td style="padding:7px 10px;font-size:12px;color:var(--tx2)">${items||'-'}</td>
+        </tr>`;
+      }).join('');
+      return `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;background:var(--bg2)">
+        <div style="padding:8px 12px;background:var(--bg3);font-size:12px;font-weight:700;color:var(--tx2)">${sp.color||'-'} <span style="color:var(--tx3);font-weight:400">(${m})</span></div>
+        <table style="width:100%;border-collapse:collapse"><tbody>${rows||'<tr><td style="padding:10px;color:var(--tx3);font-size:12px">시편종류 없음</td></tr>'}</tbody></table>
+      </div>`;
+    }).join('');
+    return colorBlocks;
+  }).join('');
+
+  const info = (label,val)=>`<div style="display:flex;gap:8px;font-size:13px;padding:3px 0"><span style="color:var(--tx3);min-width:84px">${label}</span><span style="color:var(--tx);font-weight:500">${val||'-'}</span></div>`;
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn" style="font-size:12px" onclick="wfOpenOrder('${oid}')">← ${yr}-${o.cha||'?'}차</button>
+      <button class="btn primary" style="font-size:12px" onclick="wfStage('inspection')">다음: 검수 →</button>
+      <div style="font-size:16px;font-weight:700;margin-left:8px">의뢰 — 시험 요청 내용</div>
+      <button class="btn" style="font-size:12px;margin-left:auto" onclick="wfEditOrder('${oid}')">✏️ 상세 편집</button>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;background:var(--bg2);margin-bottom:14px">
+      ${info('차수', `${yr}-${o.cha||'?'}차`)}
+      ${info('평가목적', o.purpose)}
+      ${info('현대차 담당', o.mgr)}
+      ${info('의뢰일', o.date)}
+      ${due?info('완료예정일', due):''}
+      ${info('시편 수', `${(o.specimens||[]).length}종`)}
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--tx2)">업체 · 색상별 시험항목</div>
+    ${specBlocks || '<div style="text-align:center;padding:30px;color:var(--tx3)">시편이 없습니다</div>'}`;
+}
+
+// 의뢰 상세 편집 — 기존 의뢰관리 화면을 그 차수로 정확히 구동
+function wfEditOrder(oid){
+  const yr = _wfOrderYear(oid) || String(CY);
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-orders')?.classList.add('active');
+  _wfDriveStage('orders', yr, oid);
+  _wfInjectBack('orders', 'request');
+  _wfScopeStage('orders');
+}
+
+// ──────────────────────────────────────────────
 // 검수 — 업체/색상/시편종류별 시료수령 체크리스트 (워크플로우 인라인)
 // ──────────────────────────────────────────────
 function wfInspect(oid, yr){
@@ -372,17 +435,29 @@ function wfInspect(oid, yr){
       const rows = (sp.sections||[]).map((sec,si)=>{
         const items = (sec.items||[]).filter(it=>it.checked!==false).map(it=>it.name).join(', ');
         const ea = sec.receiptEa || sec.receiptCnt || '';
+        const note = sec.receiptNote || '';
+        const noteWarn = !sec.receiptOk && note ? 'border-color:var(--o)' : '';
         return `
-          <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-top:1px solid var(--border);cursor:pointer">
-            <input type="checkbox" ${sec.receiptOk?'checked':''}
-                   onchange="wfInspectToggle('${oid}',${spIdx},${si},this.checked)"
-                   style="width:17px;height:17px;margin-top:2px;flex-shrink:0;cursor:pointer">
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:600;color:${sec.receiptOk?'var(--g)':'var(--tx)'}">${sec.name} ${ea?`<span style="font-weight:400;color:var(--tx3)">· ${ea}EA</span>`:''}</div>
-              <div style="font-size:11px;color:var(--tx3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${items||'-'}</div>
+          <div style="padding:9px 12px;border-top:1px solid var(--border)">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <input type="checkbox" ${sec.receiptOk?'checked':''}
+                     onchange="wfInspectToggle('${oid}',${spIdx},${si},this.checked)"
+                     style="width:17px;height:17px;margin-top:2px;flex-shrink:0;cursor:pointer">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;color:${sec.receiptOk?'var(--g)':'var(--tx)'}">${sec.name}</div>
+                <div style="font-size:11px;color:var(--tx3);margin-top:2px">${items||'-'}</div>
+              </div>
+              <span style="font-size:11px;color:${sec.receiptOk?'var(--g)':'var(--tx3)'};flex-shrink:0;margin-top:2px">${sec.receiptOk?'✓ 수령':'대기'}</span>
             </div>
-            ${sec.receiptOk?'<span style="font-size:11px;color:var(--g);flex-shrink:0">✓ 수령</span>':'<span style="font-size:11px;color:var(--tx3);flex-shrink:0">대기</span>'}
-          </label>`;
+            <div style="display:flex;gap:6px;margin-top:7px;padding-left:27px;flex-wrap:wrap">
+              <input value="${ea}" placeholder="실수령 EA"
+                     onchange="wfInspectField('${oid}',${spIdx},${si},'receiptEa',this.value)"
+                     style="width:88px;padding:4px 8px;font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--tx);outline:none">
+              <input value="${note.replace(/"/g,'&quot;')}" placeholder="비고 (개수 불일치 · 컬러 변경 등 특이사항)"
+                     onchange="wfInspectField('${oid}',${spIdx},${si},'receiptNote',this.value)"
+                     style="flex:1;min-width:160px;padding:4px 8px;font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--tx);outline:none;${noteWarn}">
+            </div>
+          </div>`;
       }).join('');
       return `
         <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;background:var(--bg2)">
@@ -400,10 +475,12 @@ function wfInspect(oid, yr){
       <div style="font-size:16px;font-weight:700;margin-left:8px">검수 — 시료수령 체크</div>
       <span style="font-size:12px;font-family:var(--mono);color:${done===total&&total?'var(--g)':'var(--o)'};margin-left:auto">${done}/${total} 완료</span>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:14px">
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <button class="btn primary" style="font-size:13px" onclick="wfInspectAll('${oid}',true)">전체 검수 완료 ✓</button>
       <button class="btn" style="font-size:13px" onclick="wfInspectAll('${oid}',false)">전체 해제</button>
+      <button class="btn" style="font-size:13px;margin-left:auto;border-color:var(--g);color:var(--g)" onclick="wfInspectReply('${oid}')">📧 현대차 검수 회신</button>
     </div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:12px">완료 안 된 항목은 비고에 사유(개수 불일치·컬러 변경 등)를 적어 회신하세요.</div>
     ${groups || '<div style="text-align:center;padding:40px;color:var(--tx3)">시편이 없습니다</div>'}`;
 }
 
@@ -426,6 +503,40 @@ function wfInspectAll(oid, val){
   }));
   if(typeof autoSave==='function') autoSave();
   wfInspect(oid, _wfOrderYear(oid)||String(CY));
+}
+
+// 실수령EA / 비고 저장 (재렌더 없이 — 입력 포커스 유지)
+function wfInspectField(oid, spIdx, secIdx, field, value){
+  const o = _wfOrderById(oid); if(!o) return;
+  const sec = o.specimens?.[spIdx]?.sections?.[secIdx];
+  if(!sec) return;
+  sec[field] = value;
+  if(typeof autoSave==='function') autoSave();
+}
+
+// 현대차 검수 회신 — 수령/불일치 요약을 sendLog에 기록
+function wfInspectReply(oid){
+  const o = _wfOrderById(oid); if(!o) return;
+  const yr = _wfOrderYear(oid)||String(CY);
+  const lines = [];
+  let recv=0, totalSec=0, issues=0;
+  (o.specimens||[]).forEach(sp=>(sp.sections||[]).forEach(sec=>{
+    totalSec++;
+    if(sec.receiptOk) recv++;
+    const note = (sec.receiptNote||'').trim();
+    if(note) issues++;
+    lines.push(`· ${sp.maker}/${sp.color}/${sec.name}: ${sec.receiptOk?'수령완료':'미수령'}${sec.receiptEa?` (${sec.receiptEa}EA)`:''}${note?` — ${note}`:''}`);
+  }));
+  const summary = `[검수 회신] ${yr}-${o.cha||'?'}차 (${o.purpose||''})\n수령 ${recv}/${totalSec}건${issues?` · 특이사항 ${issues}건`:''}\n\n${lines.join('\n')}`;
+
+  if(!confirm(`현대차 담당자에게 검수 회신을 발송할까요?\n\n${summary}`)) return;
+
+  if(!o.sendLog) o.sendLog = [];
+  o.sendLog.push({ type:'inspection', typeName:'검수 회신', sentAt:new Date().toISOString(), sentBy:'시험담당자', recv, totalSec, issues, status:'sent' });
+  if(typeof autoSave==='function') autoSave();
+  if(typeof showToast==='function') showToast('검수 회신이 기록되었습니다. (현대차 발송)', 'g', 3500);
+  else alert('검수 회신이 기록되었습니다.');
+  wfInspect(oid, yr);
 }
 
 
@@ -581,3 +692,7 @@ window.wfStage = wfStage;
 window.wfInspect = wfInspect;
 window.wfInspectToggle = wfInspectToggle;
 window.wfInspectAll = wfInspectAll;
+window.wfInspectField = wfInspectField;
+window.wfInspectReply = wfInspectReply;
+window.wfRequest = wfRequest;
+window.wfEditOrder = wfEditOrder;
