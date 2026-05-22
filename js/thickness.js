@@ -136,6 +136,10 @@ function tkGetLayers(secName){
 
 // 층 스펙 (스펙 없으면 측정치만)
 function tkLayerSpec(layerName, secName){
+  // 차수별 변동 스펙 우선 (의뢰 단계에서 입력 → order.thicknessSpec)
+  const ov = tkCurrentOrder && tkCurrentOrder.thicknessSpec && tkCurrentOrder.thicknessSpec[layerName];
+  if(ov && (ov.min!=null || ov.max!=null)) return ov;
+
   const s=(secName||'').toLowerCase();
   // 중도 스펙: 섹션에서 추출 (20±2, 30±2, 35±2)
   if(/중도/.test(layerName)){

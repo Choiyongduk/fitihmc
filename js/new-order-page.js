@@ -422,8 +422,11 @@
       // 차수(cha) 정규화: 끝의 "차"/"차수" 제거 → "1차" 입력해도 "1차차" 방지
       const chaEl = document.getElementById('no-cha');
       if (chaEl) chaEl.value = chaEl.value.trim().replace(/\s*차수?\s*$/,'');
-      const yr = document.getElementById('no-year')?.value;
-      const beforeIds = (((typeof activeDB === 'function' ? activeDB().orders : {})[yr]) || []).map(o => o.id);
+
+      // 등록 전 모든 차수 ID 스냅샷 (연도 무관)
+      const _dbOrders = (typeof activeDB === 'function') ? activeDB().orders : {};
+      const allBefore = new Set();
+      Object.values(_dbOrders).forEach(arr => (arr || []).forEach(o => allBefore.add(o.id)));
 
       // body.js의 registerOrder()가 읽는 noParsedData.sectionItems에 주입
       // (let noParsedData가 body.js에서 선언되어 있음 — 같은 스크립트 스코프 공유)
@@ -447,11 +450,12 @@
         }
       }
 
-      // 등록 성공 시 → 그 차수의 워크플로우로 이동 (빈 의뢰관리 화면 대신)
-      const list = (((typeof activeDB === 'function' ? activeDB().orders : {})[yr]) || []);
-      const created = list.find(o => !beforeIds.includes(o.id));
+      // 등록 성공 시 → 새로 생긴 차수를 찾아 워크플로우로 즉시 이동 (빈 의뢰관리 대신)
+      const dbNow = (typeof activeDB === 'function') ? activeDB().orders : {};
+      let created = null;
+      Object.values(dbNow).forEach(arr => (arr || []).forEach(o => { if (!allBefore.has(o.id)) created = o; }));
       if (created && typeof wfOpenOrder === 'function') {
-        setTimeout(() => { try { wfOpenOrder(created.id); } catch (e) {} }, 0);
+        wfOpenOrder(created.id);
       }
     };
     return true;

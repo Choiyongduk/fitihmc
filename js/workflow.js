@@ -400,8 +400,45 @@ function wfRequest(oid, yr){
       ${due?info('완료예정일', due):''}
       ${info('시편 수', `${(o.specimens||[]).length}종`)}
     </div>
-    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--tx2)">업체 · 색상별 시험항목</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--tx2)">도막두께 요구사항 <span style="font-weight:400;color:var(--tx3);font-size:11px">(이 차수 · 비우면 표준값 적용 · 중간결과·계산기 판정에 반영)</span></div>
+    ${_wfThicknessSpecEditor(o, oid)}
+    <div style="font-size:13px;font-weight:700;margin:16px 0 8px;color:var(--tx2)">업체 · 색상별 시험항목</div>
     ${specBlocks || '<div style="text-align:center;padding:30px;color:var(--tx3)">시편이 없습니다</div>'}`;
+}
+
+// 도막두께 변동스펙 편집기 (전착/중도/BASE/CLEAR)
+function _wfThicknessSpecEditor(o, oid){
+  const DEF = { '전착':'측정치', '중도':'35±2', 'BASE':'측정치', 'CLEAR':'40±2' };
+  const ts = o.thicknessSpec || {};
+  const rows = ['전착','중도','BASE','CLEAR'].map(layer=>{
+    const ov = ts[layer];
+    let t='', tol='';
+    if(ov && ov.min!=null && ov.max!=null){ t=(ov.min+ov.max)/2; tol=(ov.max-ov.min)/2; }
+    return `
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 0">
+        <span style="width:54px;font-size:13px;font-weight:600">${layer}</span>
+        <input id="wf-tspec-${layer}-t" value="${t}" placeholder="목표"
+               onchange="wfSetThicknessSpec('${oid}','${layer}')"
+               style="width:62px;padding:4px 6px;font-size:12px;font-family:var(--mono);background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--tx);outline:none">
+        <span style="color:var(--tx3)">±</span>
+        <input id="wf-tspec-${layer}-tol" value="${tol}" placeholder="공차"
+               onchange="wfSetThicknessSpec('${oid}','${layer}')"
+               style="width:56px;padding:4px 6px;font-size:12px;font-family:var(--mono);background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--tx);outline:none">
+        <span style="font-size:11px;color:var(--tx3)">µm · 표준: ${DEF[layer]}</span>
+      </div>`;
+  }).join('');
+  return `<div style="border:1px solid var(--border);border-radius:8px;padding:10px 14px;background:var(--bg2);margin-bottom:6px">${rows}</div>`;
+}
+
+function wfSetThicknessSpec(oid, layer){
+  const o = _wfOrderById(oid); if(!o) return;
+  const t   = parseFloat(document.getElementById('wf-tspec-'+layer+'-t')?.value);
+  const tol = parseFloat(document.getElementById('wf-tspec-'+layer+'-tol')?.value);
+  if(!o.thicknessSpec) o.thicknessSpec = {};
+  if(!isNaN(t) && !isNaN(tol))      o.thicknessSpec[layer] = {min:t-tol, max:t+tol, label:`${t}±${tol}`};
+  else if(!isNaN(t))                o.thicknessSpec[layer] = {min:t, max:t, label:`${t}`};
+  else                              delete o.thicknessSpec[layer];
+  if(typeof autoSave==='function') autoSave();
 }
 
 // 의뢰 상세 편집 — 기존 의뢰관리 화면을 그 차수로 정확히 구동
@@ -700,3 +737,4 @@ window.wfInspectField = wfInspectField;
 window.wfInspectReply = wfInspectReply;
 window.wfRequest = wfRequest;
 window.wfEditOrder = wfEditOrder;
+window.wfSetThicknessSpec = wfSetThicknessSpec;
